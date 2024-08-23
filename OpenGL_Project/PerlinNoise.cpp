@@ -88,26 +88,39 @@ double PerlinNoise::noise(double x, double y, double z)
     return (res + 1.0) / 2.0; // Map the result to the [0, 1] interval
 }
 
-void PerlinNoise::generateAndSavePerlinNoiseImage(const std::string& jpgFilePath, const std::string& rawFilePath) {
+void PerlinNoise::generateAndSavePerlinNoiseImage(const std::string& jpgFilePath, const std::string& rawFilePath) 
+{
+    std::cout << "Generating Perlin noise image..." << std::endl;
     const unsigned int width = 512, height = 512;
     std::vector<unsigned char> image(width * height * 3); // 3 channels for RGB
-
-    // Variables for debugging the range of noise values
-    double minNoiseValue = std::numeric_limits<double>::max();
-    double maxNoiseValue = -std::numeric_limits<double>::max();
 
     // Generate Perlin noise data and fill the image array
     for (unsigned int y = 0; y < height; ++y) {
         for (unsigned int x = 0; x < width; ++x) {
-            double noiseValue = this->noise(x / (double)width, y / (double)height, 0.0);
-            // Update the min and max noise values
-            minNoiseValue = std::min(minNoiseValue, noiseValue);
-            maxNoiseValue = std::max(maxNoiseValue, noiseValue);
+            double noiseValue = this->noise(x / 64.0, y / 64.0, 0.0);
+            noiseValue = (noiseValue + 1.0) / 2.0; // Map from [-1, 1] to [0, 1]
 
-            unsigned char color = static_cast<unsigned char>(noiseValue * 255);
-            image[3 * (y * width + x) + 0] = color; // Red
-            image[3 * (y * width + x) + 1] = color; // Green
-            image[3 * (y * width + x) + 2] = color; // Blue
+            // Apply gradient coloring (Fire effect: Black, Red, Yellow, White)
+            unsigned char r, g, b;
+            if (noiseValue < 0.33) {
+                r = static_cast<unsigned char>(noiseValue * 3 * 255);
+                g = 0;
+                b = 0;
+            }
+            else if (noiseValue < 0.66) {
+                r = 255;
+                g = static_cast<unsigned char>((noiseValue - 0.33) * 3 * 255);
+                b = 0;
+            }
+            else {
+                r = 255;
+                g = 255;
+                b = static_cast<unsigned char>((noiseValue - 0.66) * 3 * 255);
+            }
+
+            image[3 * (y * width + x) + 0] = r;
+            image[3 * (y * width + x) + 1] = g;
+            image[3 * (y * width + x) + 2] = b;
         }
     }
 
@@ -125,5 +138,6 @@ void PerlinNoise::generateAndSavePerlinNoiseImage(const std::string& jpgFilePath
     else {
         std::cerr << "Failed to write raw file: " << rawFilePath << std::endl;
     }
-    std::cout << std::endl;
+
+    std::cout << "Perlin noise image generated and saved as " << jpgFilePath << " and " << rawFilePath << std::endl;
 }

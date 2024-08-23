@@ -18,6 +18,7 @@
 //#include "PostProcessingScene.h"
 #include "PerlinNoise.h"
 #include "Dependencies/stb_image.h"
+#include "PerlinNoiseScene.h"
 
 
 const unsigned int WIDTH = 800;
@@ -64,6 +65,11 @@ int main() {
     GLuint shaderProgram = shaderLoader.CreateProgram(
         "Resources/Shaders/vertex_shader.vert",
         "Resources/Shaders/fragment_shader.frag"
+    );
+
+    GLuint perlinShader = shaderLoader.CreateProgram(
+        "perlin_vertex_shader.txt",
+        "perlin_fragment_shader.txt"
     );
 
     // Initialize framebuffer
@@ -127,7 +133,8 @@ int main() {
 
     // Initialize scenes
     StencilTestScene stencilTestScene(shaderLoader, cam, skybox, mineRenderer);
-    //PostProcessingScene postProcessingScene(shaderLoader, cam, mineRenderer, framebuffer, textureColorbuffer);
+    PerlinNoiseScene perlinNoiseScene(shaderLoader, cam, skybox);
+    perlinNoiseScene.initialize();
 
     // Initialize PerlinNoise
     PerlinNoise perlinNoise;
@@ -167,54 +174,11 @@ int main() {
             stencilTestScene.render();
             break;
         }
-
         case SCENE_PERLIN_NOISE:
         {
-            static glm::mat4 quadModelMatrix(1.0f);
-
-            if (!scene3Initialized)
-            {
-                std::string jpgFilePath = "perlin_noise.jpg";
-                std::string rawFilePath = "perlin_noise.raw";
-
-                // Generate and save Perlin noise
-                perlinNoise.generateAndSavePerlinNoiseImage(jpgFilePath, rawFilePath);
-
-                // Load the generated noise texture
-                glGenTextures(1, &noiseTexture);
-                glBindTexture(GL_TEXTURE_2D, noiseTexture);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-                int width, height, nrChannels;
-                unsigned char* data = stbi_load(jpgFilePath.c_str(), &width, &height, &nrChannels, 0);
-                if (data) 
-                {
-                    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-                    glGenerateMipmap(GL_TEXTURE_2D);
-                }
-                stbi_image_free(data);
-
-                scene3Initialized = true;
-            }
-
-            // Set up the shader and matrices
-            glUseProgram(shaderProgram);
-            glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &quadModelMatrix[0][0]);
-            glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_FALSE, &cam.getViewMatrix()[0][0]);
-            glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, &cam.getProjectionMatrix()[0][0]);
-
-            // Bind the noise texture and render the quad
-            glBindTexture(GL_TEXTURE_2D, noiseTexture);
-            glUniform1i(glGetUniformLocation(shaderProgram, "noiseTexture"), 0);
-            glBindVertexArray(quadVAO);
-            glDrawArrays(GL_TRIANGLES, 0, 6);
-
+            perlinNoiseScene.render();
             break;
         }
-
         case SCENE_POST_PROCESSING: 
         {
             //postProcessingScene.render(currentEffect, quadVAO);
