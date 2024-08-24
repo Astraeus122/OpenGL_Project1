@@ -18,7 +18,7 @@
 //#include "PostProcessingScene.h"
 #include "Dependencies/stb_image.h"
 #include "PerlinNoiseScene.h"
-
+#include "TerrainMap.h" 
 
 const unsigned int WIDTH = 800;
 const unsigned int HEIGHT = 600;
@@ -135,6 +135,10 @@ int main() {
     PerlinNoiseScene perlinNoiseScene(shaderLoader, cam);
     perlinNoiseScene.initialize();
 
+    // Initialize TerrainMap for Scene 2
+    TerrainMap terrainMap("Resources/Heightmap0.raw", 256, 256, 50.0f);
+    terrainMap.initialize();
+
     // Initialize PerlinNoise
     GLuint noiseTexture;
     bool scene3Initialized = false;
@@ -165,26 +169,20 @@ int main() {
         glm::mat4 view = glm::mat4(glm::mat3(cam.getViewMatrix()));
         skybox.render(cam.getProjectionMatrix() * view);
 
-        switch (currentScene) 
+        switch (currentScene)
         {
         case SCENE_STENCIL_TEST:
-        {
             stencilTestScene.render();
             break;
-        }
+        case SCENE_TERRAIN_RENDERING:
+            terrainMap.render();  // Render terrain
+            break;
         case SCENE_PERLIN_NOISE:
-        {
             perlinNoiseScene.render();
             break;
-        }
-        case SCENE_POST_PROCESSING: 
-        {
-            //postProcessingScene.render(currentEffect, quadVAO);
+        case SCENE_POST_PROCESSING:
+            // postProcessingScene.render(currentEffect, quadVAO);
             break;
-        }
-
-                                  // Add your other cases here as needed
-
         default:
             break;
         }
