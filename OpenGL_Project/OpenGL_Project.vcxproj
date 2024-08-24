@@ -179,6 +179,7 @@
     <None Include="Resources\Shaders\Light_vertex_shader.vert" />
     <None Include="Resources\Shaders\outline_fragment_shader.frag" />
     <None Include="Resources\Shaders\outline_vertex_shader.vert" />
+    <None Include="Resources\Shaders\post_processing.vert" />
     <None Include="Resources\Shaders\raining.frag" />
     <None Include="Resources\Shaders\skybox_fragment_shader.frag" />
     <None Include="Resources\Shaders\skybox_vertex_shader.vert" />

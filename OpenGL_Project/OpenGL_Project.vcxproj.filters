@@ -148,6 +148,9 @@
     <None Include="Resources\Shaders\terrain_vertex.vert">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="Resources\Shaders\post_processing.vert">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\Heightmap0.jpg">
