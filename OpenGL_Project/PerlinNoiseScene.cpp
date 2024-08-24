@@ -1,129 +1,262 @@
-#include "PerlinNoiseScene.h"
-#include "Dependencies/stb_image.h"
-#include <iostream>
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
 
-PerlinNoiseScene::PerlinNoiseScene(ShaderLoader& shaderLoader, Camera& camera, Skybox& skybox)
-    : shaderLoader(shaderLoader), camera(camera), skybox(skybox), perlinNoise((unsigned int)time(nullptr)) {
+#include "PerlinNoiseScene.h"
+#include <iostream>
+#include <fstream>
+#include <ctime>
+#include "Dependencies/stb_image.h"
+#include "Dependencies/glm/gtc/type_ptr.hpp"
+#include "Dependencies/stb_image_write.h"
+#include <numeric>
+#include <random>
+
+PerlinNoiseScene::PerlinNoiseScene(ShaderLoader& shaderLoader, Camera& camera)
+    : m_shaderLoader(shaderLoader), m_camera(camera), m_time(0.0f) {
+    m_terrainShaderProgram = m_shaderLoader.CreateProgram("perlin_vertex_shader.txt", "perlin_fragment_shader.txt");
+    m_2dNoiseShaderProgram = m_shaderLoader.CreateProgram("2d_perlin_vertex_shader.txt", "2d_perlin_fragment_shader.txt");
+    initializeNoise();
 }
 
 void PerlinNoiseScene::initialize() {
-    perlinShader = shaderLoader.CreateProgram("perlin_vertex_shader.txt", "perlin_fragment_shader.txt");
-    checkGLError("Shader compilation");
-    generateNoiseTexture();
-    setupQuad();
+    generateTerrainMesh();
+    loadTerrainTexture();
+    setup2DQuad();
+    generate2DNoiseTexture();
 }
 
-void PerlinNoiseScene::generateNoiseTexture() {
-    std::string jpgFilePath = "perlin_noise.jpg";
-    std::string rawFilePath = "perlin_noise.raw";
-    perlinNoise.generateAndSavePerlinNoiseImage(jpgFilePath, rawFilePath);
+void PerlinNoiseScene::initializeNoise() {
+    p.resize(256);
+    std::iota(p.begin(), p.end(), 0);
+    std::default_random_engine engine((unsigned int)time(nullptr));
+    std::shuffle(p.begin(), p.end(), engine);
+    p.insert(p.end(), p.begin(), p.end());
+}
 
-    glGenTextures(1, &noiseTexture);
-    glBindTexture(GL_TEXTURE_2D, noiseTexture);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+double PerlinNoiseScene::fade(double t) {
+    return t * t * t * (t * (t * 6 - 15) + 10);
+}
+
+double PerlinNoiseScene::lerp(double t, double a, double b) {
+    return a + t * (b - a);
+}
+
+double PerlinNoiseScene::grad(int hash, double x, double y, double z) {
+    int h = hash & 15;
+    double u = h < 8 ? x : y;
+    double v = h < 4 ? y : h == 12 || h == 14 ? x : z;
+    return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
+}
+
+double PerlinNoiseScene::noise(double x, double y, double z) {
+    int X = (int)floor(x) & 255;
+    int Y = (int)floor(y) & 255;
+    int Z = (int)floor(z) & 255;
+
+    x -= floor(x);
+    y -= floor(y);
+    z -= floor(z);
+
+    double u = fade(x);
+    double v = fade(y);
+    double w = fade(z);
+
+    int A = p[X] + Y;
+    int AA = p[A] + Z;
+    int AB = p[A + 1] + Z;
+    int B = p[X + 1] + Y;
+    int BA = p[B] + Z;
+    int BB = p[B + 1] + Z;
+
+    double res = lerp(w, lerp(v, lerp(u, grad(p[AA], x, y, z),
+        grad(p[BA], x - 1, y, z)),
+        lerp(u, grad(p[AB], x, y - 1, z),
+            grad(p[BB], x - 1, y - 1, z))),
+        lerp(v, lerp(u, grad(p[AA + 1], x, y, z - 1),
+            grad(p[BA + 1], x - 1, y, z - 1)),
+            lerp(u, grad(p[AB + 1], x, y - 1, z - 1),
+                grad(p[BB + 1], x - 1, y - 1, z - 1))));
+    return (res + 1.0) / 2.0;
+}
+
+void PerlinNoiseScene::generateAndSavePerlinNoiseImage(const std::string& jpgFilePath, const std::string& rawFilePath) {
+    const unsigned int width = 512, height = 512;
+    std::vector<unsigned char> image(width * height * 3);
+
+    for (unsigned int y = 0; y < height; ++y) {
+        for (unsigned int x = 0; x < width; ++x) {
+            double noiseValue = noise(x / (double)width, y / (double)height, 0.0);
+            unsigned char color = static_cast<unsigned char>(noiseValue * 255);
+            image[3 * (y * width + x) + 0] = color;
+            image[3 * (y * width + x) + 1] = color;
+            image[3 * (y * width + x) + 2] = color;
+        }
+    }
+
+    if (!stbi_write_jpg(jpgFilePath.c_str(), width, height, 3, image.data(), 100)) {
+        std::cerr << "Failed to write image: " << jpgFilePath << std::endl;
+    }
+
+    std::ofstream rawFile(rawFilePath, std::ios::out | std::ios::binary);
+    if (rawFile.is_open()) {
+        rawFile.write(reinterpret_cast<char*>(image.data()), image.size());
+        rawFile.close();
+    }
+    else {
+        std::cerr << "Failed to write raw file: " << rawFilePath << std::endl;
+    }
+}
+
+void PerlinNoiseScene::generateTerrainMesh() {
+    std::vector<float> vertices;
+    std::vector<unsigned int> indices;
+    const int resolution = 128;
+    const float size = 100.0f;
+
+    for (int z = 0; z < resolution; ++z) {
+        for (int x = 0; x < resolution; ++x) {
+            float xPos = (float)x / (resolution - 1) * size - size / 2;
+            float zPos = (float)z / (resolution - 1) * size - size / 2;
+            float yPos = noise(xPos * 0.1, zPos * 0.1, 0) * 10.0f;
+
+            vertices.push_back(xPos);
+            vertices.push_back(yPos);
+            vertices.push_back(zPos);
+            vertices.push_back((float)x / (resolution - 1));
+            vertices.push_back((float)z / (resolution - 1));
+        }
+    }
+
+    for (int z = 0; z < resolution - 1; ++z) {
+        for (int x = 0; x < resolution - 1; ++x) {
+            unsigned int topLeft = z * resolution + x;
+            unsigned int topRight = topLeft + 1;
+            unsigned int bottomLeft = (z + 1) * resolution + x;
+            unsigned int bottomRight = bottomLeft + 1;
+
+            indices.push_back(topLeft);
+            indices.push_back(bottomLeft);
+            indices.push_back(topRight);
+            indices.push_back(topRight);
+            indices.push_back(bottomLeft);
+            indices.push_back(bottomRight);
+        }
+    }
+
+    glGenVertexArrays(1, &m_terrainVAO);
+    glGenBuffers(1, &m_terrainVBO);
+    glGenBuffers(1, &m_terrainEBO);
+
+    glBindVertexArray(m_terrainVAO);
+
+    glBindBuffer(GL_ARRAY_BUFFER, m_terrainVBO);
+    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), vertices.data(), GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_terrainEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), indices.data(), GL_STATIC_DRAW);
+
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
+
+    glBindVertexArray(0);
+}
+
+void PerlinNoiseScene::loadTerrainTexture() {
+    generateAndSavePerlinNoiseImage("perlin_noise_texture.jpg", "perlin_noise_heightmap.raw");
 
     int width, height, nrChannels;
-    unsigned char* data = stbi_load(jpgFilePath.c_str(), &width, &height, &nrChannels, 0);
+    unsigned char* data = stbi_load("perlin_noise_texture.jpg", &width, &height, &nrChannels, 0);
+
     if (data) {
+        glGenTextures(1, &m_terrainTexture);
+        glBindTexture(GL_TEXTURE_2D, m_terrainTexture);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
-        std::cout << "Texture loaded successfully. Size: " << width << "x" << height << ", Channels: " << nrChannels << std::endl;
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        stbi_image_free(data);
     }
     else {
         std::cerr << "Failed to load texture" << std::endl;
     }
-    stbi_image_free(data);
-    checkGLError("Texture generation");
 }
 
-void PerlinNoiseScene::setupQuad() {
+void PerlinNoiseScene::setup2DQuad() {
     float quadVertices[] = {
-        // positions        // texture coords
-        -1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
-        -1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-         1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-        -1.0f,  1.0f, 0.0f, 0.0f, 1.0f,
-         1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-         1.0f,  1.0f, 0.0f, 1.0f, 1.0f
+        // positions   // texCoords
+        0.5f,  1.0f,  0.0f, 1.0f,
+        0.5f,  0.5f,  0.0f, 0.0f,
+        1.0f,  0.5f,  1.0f, 0.0f,
+
+        0.5f,  1.0f,  0.0f, 1.0f,
+        1.0f,  0.5f,  1.0f, 0.0f,
+        1.0f,  1.0f,  1.0f, 1.0f
     };
 
-    glGenVertexArrays(1, &quadVAO);
-    glGenBuffers(1, &quadVBO);
-    glBindVertexArray(quadVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+    glGenVertexArrays(1, &m_2dQuadVAO);
+    glGenBuffers(1, &m_2dQuadVBO);
+    glBindVertexArray(m_2dQuadVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, m_2dQuadVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    checkGLError("Quad setup");
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+}
+
+void PerlinNoiseScene::generate2DNoiseTexture() {
+    const unsigned int width = 256, height = 256;
+    std::vector<unsigned char> noiseData(width * height * 3);
+
+    glGenTextures(1, &m_2dNoiseTexture);
+    glBindTexture(GL_TEXTURE_2D, m_2dNoiseTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+}
+
+void PerlinNoiseScene::update(float deltaTime) {
+    m_time += deltaTime;
 }
 
 void PerlinNoiseScene::render() {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    // Render 3D terrain
+    glEnable(GL_DEPTH_TEST);
+    glUseProgram(m_terrainShaderProgram);
 
-    // Render skybox
-    glDepthMask(GL_FALSE);
-    glm::mat4 skyboxView = glm::mat4(glm::mat3(camera.getViewMatrix()));
-    skybox.render(camera.getProjectionMatrix() * skyboxView);
-    glDepthMask(GL_TRUE);
-    checkGLError("Skybox rendering");
+    glm::mat4 model = glm::mat4(1.0f);
+    glm::mat4 view = m_camera.getViewMatrix();
+    glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
 
-    // Render Perlin noise quad
-    glUseProgram(perlinShader);
+    glUniformMatrix4fv(glGetUniformLocation(m_terrainShaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(model));
+    glUniformMatrix4fv(glGetUniformLocation(m_terrainShaderProgram, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    glUniformMatrix4fv(glGetUniformLocation(m_terrainShaderProgram, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
 
-    // Position the quad in front of the camera
-    glm::vec3 quadPos = camera.position + camera.front * 5.0f;
-    quadModelMatrix = glm::translate(glm::mat4(1.0f), quadPos);
-    quadModelMatrix = glm::scale(quadModelMatrix, glm::vec3(5.0f));
-
-    // Make the quad face the camera
-    glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
-    glm::vec3 right = glm::normalize(glm::cross(camera.front, up));
-    up = glm::cross(right, camera.front);
-    glm::mat4 rotationMatrix = glm::mat4(
-        glm::vec4(right, 0.0f),
-        glm::vec4(up, 0.0f),
-        glm::vec4(-camera.front, 0.0f),
-        glm::vec4(0.0f, 0.0f, 0.0f, 1.0f)
-    );
-    quadModelMatrix = quadModelMatrix * rotationMatrix;
-
-    // Set uniforms
-    GLint modelLoc = glGetUniformLocation(perlinShader, "model");
-    GLint viewLoc = glGetUniformLocation(perlinShader, "view");
-    GLint projLoc = glGetUniformLocation(perlinShader, "projection");
-    GLint textureSamplerLoc = glGetUniformLocation(perlinShader, "textureSampler");
-
-    if (modelLoc != -1) glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &quadModelMatrix[0][0]);
-    if (viewLoc != -1) glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &camera.getViewMatrix()[0][0]);
-    if (projLoc != -1) glUniformMatrix4fv(projLoc, 1, GL_FALSE, &camera.getProjectionMatrix()[0][0]);
-
-    // Bind the noise texture
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, noiseTexture);
-    if (textureSamplerLoc != -1) glUniform1i(textureSamplerLoc, 0);
+    glBindTexture(GL_TEXTURE_2D, m_terrainTexture);
+    glUniform1i(glGetUniformLocation(m_terrainShaderProgram, "perlinTexture"), 0);
 
-    // Render the quad
-    glBindVertexArray(quadVAO);
+    glBindVertexArray(m_terrainVAO);
+    glDrawElements(GL_TRIANGLES, (128 - 1) * (128 - 1) * 6, GL_UNSIGNED_INT, 0);
+
+    // Render 2D animated noise quad
+    glDisable(GL_DEPTH_TEST);
+    glUseProgram(m_2dNoiseShaderProgram);
+
+    // Update the time uniform
+    glUniform1f(glGetUniformLocation(m_2dNoiseShaderProgram, "time"), m_time);
+
+    glBindVertexArray(m_2dQuadVAO);
     glDrawArrays(GL_TRIANGLES, 0, 6);
-    checkGLError("Quad rendering");
 
-    // Print debug information
-    std::cout << "Perlin shader program ID: " << perlinShader << std::endl;
-    std::cout << "Noise texture ID: " << noiseTexture << std::endl;
-    std::cout << "Model matrix location: " << modelLoc << std::endl;
-    std::cout << "View matrix location: " << viewLoc << std::endl;
-    std::cout << "Projection matrix location: " << projLoc << std::endl;
-    std::cout << "Texture sampler location: " << textureSamplerLoc << std::endl;
-}
-
-void PerlinNoiseScene::checkGLError(const char* operation) {
-    GLenum error;
-    while ((error = glGetError()) != GL_NO_ERROR) {
-        std::cerr << "OpenGL error after " << operation << ": " << error << std::endl;
-    }
+    glBindVertexArray(0);
+    glEnable(GL_DEPTH_TEST);
 }

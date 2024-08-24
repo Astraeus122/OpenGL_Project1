@@ -1,0 +1,82 @@
+#version 330 core
+in vec2 TexCoords;
+out vec4 FragColor;
+
+uniform float time;
+
+// Improved hash function
+vec2 hash2(vec2 p)
+{
+    p = vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)));
+    return -1.0 + 2.0 * fract(sin(p) * 43758.5453123);
+}
+
+// Perlin noise function
+float perlin(vec2 p)
+{
+    vec2 pi = floor(p);
+    vec2 pf = p - pi;
+    
+    vec2 w = pf * pf * (3.0 - 2.0 * pf);
+    
+    return mix(
+        mix(dot(hash2(pi + vec2(0.0, 0.0)), pf - vec2(0.0, 0.0)),
+            dot(hash2(pi + vec2(1.0, 0.0)), pf - vec2(1.0, 0.0)), w.x),
+        mix(dot(hash2(pi + vec2(0.0, 1.0)), pf - vec2(0.0, 1.0)),
+            dot(hash2(pi + vec2(1.0, 1.0)), pf - vec2(1.0, 1.0)), w.x),
+        w.y
+    ) * 0.5 + 0.5;
+}
+
+// Fractal Brownian Motion
+float fbm(vec2 p)
+{
+    float value = 0.0;
+    float amplitude = 0.5;
+    float frequency = 0.0;
+    for (int i = 0; i < 6; i++)
+    {
+        value += amplitude * perlin(p);
+        p *= 2.0;
+        amplitude *= 0.5;
+    }
+    return value;
+}
+
+void main()
+{
+    vec2 uv = TexCoords * 5.0; // Scale UV coordinates
+    
+    // Create motion by offsetting the UV coordinates with time
+    vec2 motion1 = vec2(time * 0.1, time * 0.2);
+    vec2 motion2 = vec2(time * 0.15, -time * 0.1);
+    
+    float n = fbm(uv + motion1) * 0.5 + fbm(uv + motion2) * 0.5;
+    
+    // Define the gradient colors
+    vec3 white = vec3(1.0, 1.0, 1.0);
+    vec3 yellow = vec3(1.0, 1.0, 0.0);
+    vec3 red = vec3(1.0, 0.0, 0.0);
+    vec3 black = vec3(0.0, 0.0, 0.0);
+
+    // Interpolate between colors based on noise value
+    vec3 color;
+    if (n < 0.25) 
+    {
+        color = mix(white, yellow, n / 0.25);
+    } 
+    else if (n < 0.5) 
+    {
+        color = mix(yellow, red, (n - 0.25) / 0.25);
+    } 
+    else if (n < 0.75) 
+    {
+        color = mix(red, black, (n - 0.5) / 0.25);
+    } 
+    else 
+    {
+        color = black;
+    }
+
+    FragColor = vec4(color, 1.0);
+}

@@ -144,7 +144,6 @@
     <ClCompile Include="LightManager.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="ModelLoader.cpp" />
-    <ClCompile Include="PerlinNoise.cpp" />
     <ClCompile Include="PerlinNoiseScene.cpp" />
     <ClCompile Include="PostProcessingScene.cpp" />
     <ClCompile Include="ShaderLoader.cpp" />
@@ -160,7 +159,6 @@
     <ClInclude Include="InstancedRenderer.h" />
     <ClInclude Include="LightManager.h" />
     <ClInclude Include="ModelLoader.h" />
-    <ClInclude Include="PerlinNoise.h" />
     <ClInclude Include="PerlinNoiseScene.h" />
     <ClInclude Include="PostProcessingScene.h" />
     <ClInclude Include="ShaderLoader.h" />
@@ -188,6 +186,8 @@
     <Image Include="Resources\Heightmap0.jpg" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="2d_perlin_fragment_shader.txt" />
+    <Text Include="2d_perlin_vertex_shader.txt" />
     <Text Include="perlin_fragment_shader.txt" />
     <Text Include="perlin_vertex_shader.txt" />
   </ItemGroup>

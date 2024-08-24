@@ -48,9 +48,6 @@
     <ClCompile Include="PostProcessingScene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PerlinNoise.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="PerlinNoiseScene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -90,9 +87,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PostProcessingScene.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PerlinNoise.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PerlinNoiseScene.h">
@@ -153,6 +147,12 @@
       <Filter>Resource Files</Filter>
     </Text>
     <Text Include="perlin_vertex_shader.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="2d_perlin_vertex_shader.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="2d_perlin_fragment_shader.txt">
       <Filter>Resource Files</Filter>
     </Text>
   </ItemGroup>

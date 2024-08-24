@@ -16,7 +16,6 @@
 #include "LightManager.h"
 #include "StencilTestScene.h"
 //#include "PostProcessingScene.h"
-#include "PerlinNoise.h"
 #include "Dependencies/stb_image.h"
 #include "PerlinNoiseScene.h"
 
@@ -133,11 +132,10 @@ int main() {
 
     // Initialize scenes
     StencilTestScene stencilTestScene(shaderLoader, cam, skybox, mineRenderer);
-    PerlinNoiseScene perlinNoiseScene(shaderLoader, cam, skybox);
+    PerlinNoiseScene perlinNoiseScene(shaderLoader, cam);
     perlinNoiseScene.initialize();
 
     // Initialize PerlinNoise
-    PerlinNoise perlinNoise;
     GLuint noiseTexture;
     bool scene3Initialized = false;
 
