@@ -116,7 +116,6 @@ void initFramebuffers() {
 }
 
 
-
 int main() {
     GLFWwindow* window = initWindow();
     if (!window) {
@@ -157,6 +156,12 @@ int main() {
     ModelLoader mineModelLoader("Resources/Models/SciFiSpace/SM_Prop_Mine_01.obj");
     mineModelLoader.loadModel();
 
+    ModelLoader alienModelLoader("Resources/Models/SciFiWorlds/SM_Env_Artifact_AlienRuin_03.obj");
+    alienModelLoader.loadModel();
+
+    ModelLoader cannonModelLoader("Resources/Models/SciFiWorlds/SM_Bld_Planetary_Cannon_01.obj");
+    cannonModelLoader.loadModel();
+
     // Initialize instance renderer for the turret model
     InstancedRenderer mineRenderer(
         mineModelLoader.getPositions(),
@@ -165,7 +170,30 @@ int main() {
         "Resources/Textures/PolygonSciFiSpace_Texture_01_A.png",
         10 // Number of instances
     );
+
     mineRenderer.initialize();
+
+    // Initialize instance renderer for the turret model
+    InstancedRenderer alienRenderer(
+        alienModelLoader.getPositions(),
+        alienModelLoader.getTexCoords(),
+        alienModelLoader.getNormals(),
+        "Resources/Textures/PolygonSciFiSpace_Texture_01_A.png",
+        10 // Number of instances
+    );
+
+    alienRenderer.initialize();
+
+    // Initialize instance renderer for the turret model
+    InstancedRenderer canonRenderer(
+        cannonModelLoader.getPositions(),
+        cannonModelLoader.getTexCoords(),
+        cannonModelLoader.getNormals(),
+        "Resources/Textures/PolygonSciFiSpace_Texture_01_A.png",
+        10 // Number of instances
+    );
+
+    canonRenderer.initialize();
 
     const std::vector<std::string> skyboxFaces = {
         "Resources/Skybox/Right.png",
