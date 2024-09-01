@@ -193,7 +193,7 @@ int main() {
     bool scene3Initialized = false;
 
     initQuadVAO();
-    PostProcessingScene postProcessingScene(shaderLoader, cam, mineRenderer, framebuffer, textureColorbuffer);
+    PostProcessingScene postProcessingScene(shaderLoader, cam, skybox, mineRenderer, WIDTH, HEIGHT);
 
     glEnable(GL_DEPTH_TEST);
 
@@ -233,7 +233,7 @@ int main() {
             perlinNoiseScene.render();
             break;
         case SCENE_POST_PROCESSING:
-             postProcessingScene.render(currentEffect, quadVAO);
+            postProcessingScene.render(currentEffect);
             break;
         default:
             break;
@@ -327,7 +327,7 @@ void processInput(GLFWwindow* window, Camera& camera, InputHandler& inputHandler
 
     // Handle post-processing effect cycling
     if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS && !tabKeyPressed) {
-        currentEffect = (currentEffect + 1) % 5; // Assuming 5 effects (0 to 4)
+        currentEffect = (currentEffect + 1) % 4;
         tabKeyPressed = true;
     }
     else if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_RELEASE) {

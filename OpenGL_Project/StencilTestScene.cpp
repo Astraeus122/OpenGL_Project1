@@ -7,7 +7,8 @@ StencilTestScene::StencilTestScene(ShaderLoader& shaderLoader, Camera& camera, S
     outlineShaderProgram = shaderLoader.CreateProgram("Resources/Shaders/outline_vertex_shader.vert", "Resources/Shaders/outline_fragment_shader.frag");
 }
 
-void StencilTestScene::render() {
+void StencilTestScene::render()
+{
     // Clear buffers
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
