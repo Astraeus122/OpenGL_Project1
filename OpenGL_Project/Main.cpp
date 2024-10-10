@@ -15,13 +15,14 @@
 #include "Texture.h"
 #include "LightManager.h"
 #include "PostProcessingScene.h"
-#include "Dependencies/stb_image.h"
 #include "PerlinNoiseScene.h"
+#include "ShadowScene.h"  // New addition for Shadow Scene
 
 const unsigned int WIDTH = 800;
 const unsigned int HEIGHT = 600;
 
 enum Scene {
+    SCENE_SHADOW,
     SCENE_PERLIN_NOISE,
     SCENE_POST_PROCESSING
 };
@@ -40,7 +41,7 @@ void mouseCallback(GLFWwindow* window, double xpos, double ypos);
 void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 
 Camera* camera;
-Scene currentScene = SCENE_PERLIN_NOISE; // Start with the Perlin noise scene by default
+Scene currentScene = SCENE_SHADOW; // Start with Shadow scene by default
 
 void initQuadVAO() {
     float quadVertices[] = {
@@ -108,15 +109,6 @@ int main() {
     glViewport(0, 0, WIDTH, HEIGHT);
 
     ShaderLoader shaderLoader;
-    GLuint shaderProgram = shaderLoader.CreateProgram(
-        "Resources/Shaders/vertex_shader.vert",
-        "Resources/Shaders/fragment_shader.frag"
-    );
-
-    GLuint perlinShader = shaderLoader.CreateProgram(
-        "perlin_vertex_shader.txt",
-        "perlin_fragment_shader.txt"
-    );
 
     initFramebuffers();
 
@@ -183,8 +175,12 @@ int main() {
     PerlinNoiseScene perlinNoiseScene(shaderLoader, cam);
     perlinNoiseScene.initialize();
 
-    initQuadVAO();
     PostProcessingScene postProcessingScene(shaderLoader, *camera, skybox, mineRenderer, canonRenderer, alienRenderer, WIDTH, HEIGHT);
+
+    ShadowScene shadowScene(shaderLoader, cam, skybox, mineRenderer, lightManager);  // Initialize the Shadow Scene
+    shadowScene.initialize();  // Setup for Shadow Scene
+
+    initQuadVAO();
 
     glEnable(GL_DEPTH_TEST);
 
@@ -212,6 +208,9 @@ int main() {
 
         switch (currentScene)
         {
+        case SCENE_SHADOW:
+            shadowScene.render();  // Render the Shadow Scene
+            break;
         case SCENE_PERLIN_NOISE:
             perlinNoiseScene.render();
             break;
@@ -252,6 +251,9 @@ GLFWwindow* initWindow() {
 }
 
 void processSceneInput(GLFWwindow* window, Scene& currentScene) {
+    if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) {
+        currentScene = SCENE_SHADOW;
+    }
     if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) {
         currentScene = SCENE_PERLIN_NOISE;
     }
