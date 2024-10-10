@@ -147,6 +147,7 @@
     <ClCompile Include="PerlinNoiseScene.cpp" />
     <ClCompile Include="PostProcessingScene.cpp" />
     <ClCompile Include="ShaderLoader.cpp" />
+    <ClCompile Include="ShadowScene.cpp" />
     <ClCompile Include="Skybox.cpp" />
     <ClCompile Include="StencilTestScene.cpp" />
     <ClCompile Include="TerrainMap.cpp" />
@@ -163,12 +164,15 @@
     <ClInclude Include="PerlinNoiseScene.h" />
     <ClInclude Include="PostProcessingScene.h" />
     <ClInclude Include="ShaderLoader.h" />
+    <ClInclude Include="ShadowScene.h" />
     <ClInclude Include="Skybox.h" />
     <ClInclude Include="StencilTestScene.h" />
     <ClInclude Include="TerrainMap.h" />
     <ClInclude Include="Texture.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="lighting_fragment_shader.frag" />
+    <None Include="lighting_vertex_shader.vert" />
     <None Include="Resources\Heightmap0.raw" />
     <None Include="Resources\Shaders\blinn_phong.frag" />
     <None Include="Resources\Shaders\blinn_phong.vert" />
@@ -187,6 +191,8 @@
     <None Include="Resources\Shaders\terrain_fragment.frag" />
     <None Include="Resources\Shaders\terrain_vertex.vert" />
     <None Include="Resources\Shaders\vertex_shader.vert" />
+    <None Include="shadow_fragment_shader.frag" />
+    <None Include="shadow_vertex_shader.vert" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\Heightmap0.jpg" />

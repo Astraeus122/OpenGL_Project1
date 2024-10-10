@@ -14,23 +14,17 @@
 #include "Skybox.h"
 #include "Texture.h"
 #include "LightManager.h"
-#include "StencilTestScene.h"
 #include "PostProcessingScene.h"
 #include "Dependencies/stb_image.h"
 #include "PerlinNoiseScene.h"
-#include "TerrainMap.h" 
 
 const unsigned int WIDTH = 800;
 const unsigned int HEIGHT = 600;
 
 enum Scene {
-    SCENE_STENCIL_TEST = 1,
-    SCENE_TERRAIN_RENDERING,
     SCENE_PERLIN_NOISE,
     SCENE_POST_PROCESSING
 };
-
-
 
 GLuint framebuffer, textureColorbuffer, rbo;
 GLuint quadVAO = 0;
@@ -46,7 +40,7 @@ void mouseCallback(GLFWwindow* window, double xpos, double ypos);
 void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 
 Camera* camera;
-Scene currentScene = SCENE_STENCIL_TEST; // Start with the stencil test scene by default
+Scene currentScene = SCENE_PERLIN_NOISE; // Start with the Perlin noise scene by default
 
 void initQuadVAO() {
     float quadVertices[] = {
@@ -91,22 +85,6 @@ void initFramebuffers() {
     // Check if framebuffer is complete
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
         std::cerr << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
-        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_UNDEFINED)
-            std::cerr << "GL_FRAMEBUFFER_UNDEFINED" << std::endl;
-        else if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT)
-            std::cerr << "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT" << std::endl;
-        else if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT)
-            std::cerr << "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT" << std::endl;
-        else if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER)
-            std::cerr << "GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER" << std::endl;
-        else if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER)
-            std::cerr << "GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER" << std::endl;
-        else if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_UNSUPPORTED)
-            std::cerr << "GL_FRAMEBUFFER_UNSUPPORTED" << std::endl;
-        else if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE)
-            std::cerr << "GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE" << std::endl;
-        else if (glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS)
-            std::cerr << "GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS" << std::endl;
     }
     else {
         std::cout << "Framebuffer is complete and ready for rendering!" << std::endl;
@@ -114,7 +92,6 @@ void initFramebuffers() {
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
-
 
 int main() {
     GLFWwindow* window = initWindow();
@@ -152,7 +129,7 @@ int main() {
     LightManager lightManager;
     lightManager.initialize();
 
-    // Load the turret model
+    // Load models
     ModelLoader mineModelLoader("Resources/Models/SciFiSpace/SM_Prop_Mine_01.obj");
     mineModelLoader.loadModel();
 
@@ -162,37 +139,32 @@ int main() {
     ModelLoader cannonModelLoader("Resources/Models/SciFiWorlds/SM_Bld_Planetary_Cannon_01.obj");
     cannonModelLoader.loadModel();
 
-    // Initialize instance renderer for the turret model
+    // Initialize instance renderer for models
     InstancedRenderer mineRenderer(
         mineModelLoader.getPositions(),
         mineModelLoader.getTexCoords(),
         mineModelLoader.getNormals(),
         "Resources/Textures/PolygonSciFiSpace_Texture_01_A.png",
-        10 // Number of instances
+        10
     );
-
     mineRenderer.initialize();
 
-    // Initialize instance renderer for the turret model
     InstancedRenderer alienRenderer(
         alienModelLoader.getPositions(),
         alienModelLoader.getTexCoords(),
         alienModelLoader.getNormals(),
         "Resources/Textures/PolygonSciFiSpace_Texture_01_A.png",
-        10 // Number of instances
+        10
     );
-
     alienRenderer.initialize();
 
-    // Initialize instance renderer for the turret model
     InstancedRenderer canonRenderer(
         cannonModelLoader.getPositions(),
         cannonModelLoader.getTexCoords(),
         cannonModelLoader.getNormals(),
         "Resources/Textures/PolygonSciFiSpace_Texture_01_A.png",
-        10 // Number of instances
+        10
     );
-
     canonRenderer.initialize();
 
     const std::vector<std::string> skyboxFaces = {
@@ -208,20 +180,11 @@ int main() {
     Skybox skybox(skyboxFaces);
 
     // Initialize scenes
-    StencilTestScene stencilTestScene(shaderLoader, cam, skybox, mineRenderer);
     PerlinNoiseScene perlinNoiseScene(shaderLoader, cam);
     perlinNoiseScene.initialize();
 
-    // Initialize TerrainMap for Scene 2
-    TerrainMap terrainMap("Resources/Heightmap0.raw", 256, 256, 50.0f);
-    terrainMap.initialize();
-
-    // Initialize PerlinNoise
-    GLuint noiseTexture;
-    bool scene3Initialized = false;
-
     initQuadVAO();
-    PostProcessingScene postProcessingScene(shaderLoader, cam, skybox, mineRenderer, WIDTH, HEIGHT);
+    PostProcessingScene postProcessingScene(shaderLoader, *camera, skybox, mineRenderer, canonRenderer, alienRenderer, WIDTH, HEIGHT);
 
     glEnable(GL_DEPTH_TEST);
 
@@ -240,9 +203,7 @@ int main() {
         processSceneInput(window, currentScene);  // Handle scene switching input
         processInput(window, cam, inputHandler, lightManager, deltaTime);  // Handle camera and light input
 
-        // Ensure the camera updates before passing light data
         cam.update(deltaTime);
-
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Common rendering: Skybox
@@ -251,12 +212,6 @@ int main() {
 
         switch (currentScene)
         {
-        case SCENE_STENCIL_TEST:
-            stencilTestScene.render();
-            break;
-        case SCENE_TERRAIN_RENDERING:
-            terrainMap.render();  // Render terrain
-            break;
         case SCENE_PERLIN_NOISE:
             perlinNoiseScene.render();
             break;
@@ -297,12 +252,6 @@ GLFWwindow* initWindow() {
 }
 
 void processSceneInput(GLFWwindow* window, Scene& currentScene) {
-    if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) {
-        currentScene = SCENE_STENCIL_TEST;
-    }
-    if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) {
-        currentScene = SCENE_TERRAIN_RENDERING;
-    }
     if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS) {
         currentScene = SCENE_PERLIN_NOISE;
     }

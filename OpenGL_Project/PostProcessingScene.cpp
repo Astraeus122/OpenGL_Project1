@@ -3,8 +3,11 @@
 #include <iostream>
 #include <string>
 
-PostProcessingScene::PostProcessingScene(ShaderLoader& shaderLoader, Camera& camera, Skybox& skybox, InstancedRenderer& renderer, unsigned int width, unsigned int height)
-    : shaderLoader(shaderLoader), camera(camera), skybox(skybox), renderer(renderer), currentEffect(0) {
+PostProcessingScene::PostProcessingScene(ShaderLoader& shaderLoader, Camera& camera, Skybox& skybox,
+    InstancedRenderer& mineRenderer, InstancedRenderer& cannonRenderer,
+    InstancedRenderer& alienRenderer, unsigned int width, unsigned int height)
+    : shaderLoader(shaderLoader), camera(camera), skybox(skybox),
+    mineRenderer(mineRenderer), cannonRenderer(cannonRenderer), alienRenderer(alienRenderer), currentEffect(0) {
 
     // Load base scene shaders
     shaderProgram = shaderLoader.CreateProgram("Resources/Shaders/vertex_shader.vert", "Resources/Shaders/fragment_shader.frag");
@@ -90,24 +93,29 @@ void PostProcessingScene::render(int currentEffect) {
     skybox.render(camera.getProjectionMatrix() * view);
     glDepthMask(GL_TRUE); // Enable depth buffer writing
 
-    // Render the 3D models
+    // Set up shader program
     glUseProgram(shaderProgram);
 
-    // Model matrix with rotation
+    // Render the mine
     glm::mat4 modelMatrix = glm::mat4(1.0f);
     float rotationAngle = glm::radians(glfwGetTime() * 20.0f);
     modelMatrix = glm::rotate(modelMatrix, rotationAngle, glm::vec3(0.0f, 1.0f, 0.0f));
-
-    glm::mat4 viewMatrix = camera.getViewMatrix();
-    glm::mat4 projectionMatrix = camera.getProjectionMatrix();
-
-    // Set uniforms for the model
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &modelMatrix[0][0]);
-    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_FALSE, &viewMatrix[0][0]);
-    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, &projectionMatrix[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_FALSE, &camera.getViewMatrix()[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, &camera.getProjectionMatrix()[0][0]);
+    mineRenderer.render(shaderProgram, modelMatrix);
 
-    // Render the model
-    renderer.render(shaderProgram, modelMatrix);
+    // Render the cannon
+    modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(20.0f, 0.0f, 0.0f));
+    modelMatrix = glm::rotate(modelMatrix, rotationAngle, glm::vec3(0.0f, 1.0f, 0.0f));
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &modelMatrix[0][0]);
+    cannonRenderer.render(shaderProgram, modelMatrix);
+
+    // Render the alien
+    modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(-20.0f, 0.0f, 0.0f));
+    modelMatrix = glm::rotate(modelMatrix, rotationAngle, glm::vec3(0.0f, 1.0f, 0.0f));
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &modelMatrix[0][0]);
+    alienRenderer.render(shaderProgram, modelMatrix);
 
     // Unbind the framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -117,6 +125,7 @@ void PostProcessingScene::render(int currentEffect) {
     // Apply post-processing effects
     applyEffect(textureColorbuffer, currentEffect);
 }
+
 
 void PostProcessingScene::applyEffect(GLuint textureId, int effectId) {
     glBindVertexArray(quadVAO);

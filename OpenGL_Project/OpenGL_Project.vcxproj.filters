@@ -54,6 +54,9 @@
     <ClCompile Include="TerrainMap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ShadowScene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ShaderLoader.h">
@@ -96,6 +99,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TerrainMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShadowScene.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -152,6 +158,18 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="Resources\Shaders\sobel.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shadow_vertex_shader.vert">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shadow_fragment_shader.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="lighting_vertex_shader.vert">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="lighting_fragment_shader.frag">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

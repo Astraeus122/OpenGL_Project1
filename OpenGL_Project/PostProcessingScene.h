@@ -9,7 +9,10 @@
 
 class PostProcessingScene {
 public:
-    PostProcessingScene(ShaderLoader& shaderLoader, Camera& camera, Skybox& skybox, InstancedRenderer& renderer, unsigned int width, unsigned int height);
+    PostProcessingScene(ShaderLoader& shaderLoader, Camera& camera, Skybox& skybox,
+        InstancedRenderer& mineRenderer, InstancedRenderer& cannonRenderer, InstancedRenderer& alienRenderer,
+        unsigned int width, unsigned int height);
+
     void render(int currentEffect);
     void nextEffect();
 
@@ -17,7 +20,9 @@ private:
     ShaderLoader& shaderLoader;
     Camera& camera;
     Skybox& skybox;
-    InstancedRenderer& renderer;
+    InstancedRenderer& mineRenderer;
+    InstancedRenderer& cannonRenderer;
+    InstancedRenderer& alienRenderer;
 
     GLuint framebuffer;
     GLuint textureColorbuffer;

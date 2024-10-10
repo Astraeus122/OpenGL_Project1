@@ -33,6 +33,7 @@ public:
     float radius;
     bool automaticMovement;
 
+
     void updateCameraVectors();
 };
 
