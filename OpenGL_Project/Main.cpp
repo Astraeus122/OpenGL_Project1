@@ -210,6 +210,7 @@ int main() {
         {
         case SCENE_SHADOW:
             shadowScene.render();  // Render the Shadow Scene
+            std::cout << "Shadow Scene renderered";
             break;
         case SCENE_PERLIN_NOISE:
             perlinNoiseScene.render();
