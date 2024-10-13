@@ -3,8 +3,8 @@
 
 ShadowScene::ShadowScene(ShaderLoader& shaderLoader, Camera& camera, Skybox& skybox, InstancedRenderer& renderer, LightManager& lightManager)
     : shaderLoader(shaderLoader), camera(camera), skybox(skybox), renderer(renderer), lightManager(lightManager) {
-    shadowShaderProgram = shaderLoader.CreateProgram("Resources/Shaders/shadow_vertex_shader.vert", "Resources/Shaders/shadow_fragment_shader.frag");
-    lightingShaderProgram = shaderLoader.CreateProgram("Resources/Shaders/lighting_vertex_shader.vert", "Resources/Shaders/lighting_fragment_shader.frag");
+    shadowShaderProgram = shaderLoader.CreateProgram("Resources/Shaders/shadow_vertex_shader.txt", "Resources/Shaders/shadow_fragment_shader.txt");
+    lightingShaderProgram = shaderLoader.CreateProgram("Resources/Shaders/lighting_vertex_shader.txt", "Resources/Shaders/lighting_fragment_shader.txt");
 }
 
 void ShadowScene::initialize() {

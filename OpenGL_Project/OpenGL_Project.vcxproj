@@ -192,7 +192,9 @@
     <None Include="Resources\Shaders\terrain_vertex.vert" />
     <None Include="Resources\Shaders\vertex_shader.vert" />
     <None Include="shadow_fragment_shader.frag" />
-    <None Include="shadow_vertex_shader.vert" />
+    <None Include="shadow_vertex_shader.vert">
+      <FileType>Document</FileType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\Heightmap0.jpg" />
@@ -200,8 +202,12 @@
   <ItemGroup>
     <Text Include="2d_perlin_fragment_shader.txt" />
     <Text Include="2d_perlin_vertex_shader.txt" />
+    <Text Include="lighting_fragment_shader.txt" />
+    <Text Include="lighting_vertex_shader.txt" />
     <Text Include="perlin_fragment_shader.txt" />
     <Text Include="perlin_vertex_shader.txt" />
+    <Text Include="shadow_fragment_shader.txt" />
+    <Text Include="shadow_vertex_shader.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

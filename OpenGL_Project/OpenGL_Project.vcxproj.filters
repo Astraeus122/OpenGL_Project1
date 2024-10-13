@@ -160,9 +160,6 @@
     <None Include="Resources\Shaders\sobel.frag">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="shadow_vertex_shader.vert">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="shadow_fragment_shader.frag">
       <Filter>Resource Files</Filter>
     </None>
@@ -170,6 +167,9 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="lighting_fragment_shader.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="shadow_vertex_shader.vert">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
@@ -189,6 +189,18 @@
       <Filter>Resource Files</Filter>
     </Text>
     <Text Include="2d_perlin_fragment_shader.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="shadow_vertex_shader.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="shadow_fragment_shader.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="lighting_vertex_shader.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="lighting_fragment_shader.txt">
       <Filter>Resource Files</Filter>
     </Text>
   </ItemGroup>

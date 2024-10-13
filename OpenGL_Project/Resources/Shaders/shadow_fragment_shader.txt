@@ -1,0 +1,7 @@
+#version 330 core
+
+void main()
+{
+    // We only care about depth, so there's no color output
+    gl_FragDepth = gl_FragCoord.z;
+}

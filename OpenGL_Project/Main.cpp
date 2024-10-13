@@ -16,7 +16,7 @@
 #include "LightManager.h"
 #include "PostProcessingScene.h"
 #include "PerlinNoiseScene.h"
-#include "ShadowScene.h"  // New addition for Shadow Scene
+#include "ShadowScene.h" 
 
 const unsigned int WIDTH = 800;
 const unsigned int HEIGHT = 600;
@@ -210,7 +210,6 @@ int main() {
         {
         case SCENE_SHADOW:
             shadowScene.render();  // Render the Shadow Scene
-            std::cout << "Shadow Scene renderered";
             break;
         case SCENE_PERLIN_NOISE:
             perlinNoiseScene.render();
