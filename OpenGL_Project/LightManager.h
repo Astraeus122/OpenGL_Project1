@@ -44,6 +44,16 @@ public:
     bool directionalLightOn;
     bool spotLightOn;
 
+    glm::vec3 position;
+    glm::vec3 color;
+    float linear;
+    float quadratic;
+
+    glm::vec3 getPosition() const;
+    glm::vec3 getColor() const;
+    void setPosition(const glm::vec3& pos);
+    void setColor(const glm::vec3& col);
+
 private:
     GLuint lightVAO, lightVBO;
     GLuint lightShaderProgram;

@@ -2,6 +2,5 @@
 
 void main()
 {
-    // We only care about depth, so there's no color output
-    gl_FragDepth = gl_FragCoord.z;
+    // Depth value is automatically written to gl_FragDepth
 }

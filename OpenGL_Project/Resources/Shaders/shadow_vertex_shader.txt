@@ -1,11 +1,11 @@
 #version 330 core
-
 layout (location = 0) in vec3 aPos;
 
-uniform mat4 lightSpaceMatrix;
-uniform mat4 model;
+uniform mat4 lightSpaceMatrix; // The light's view-projection matrix
+uniform mat4 model; // Model matrix for the object
 
 void main()
 {
+    // Transform the vertex position into the light's space
     gl_Position = lightSpaceMatrix * model * vec4(aPos, 1.0);
 }

@@ -1,5 +1,3 @@
-#define TINYOBJLOADER_IMPLEMENTATION
-
 #include <glew.h>
 #include <glfw3.h>
 #include <iostream>
@@ -21,7 +19,11 @@
 const unsigned int WIDTH = 800;
 const unsigned int HEIGHT = 600;
 
-enum Scene {
+glm::vec3 movableModelPosition(20.0f, 0.0f, 20.0f); // Initial position of movable model
+float moveSpeed = 10.0f; // Units per second
+
+enum Scene 
+{
     SCENE_SHADOW,
     SCENE_PERLIN_NOISE,
     SCENE_POST_PROCESSING
@@ -35,7 +37,7 @@ int currentEffect = 0; // For cycling through effects
 bool tabKeyPressed = false;
 
 GLFWwindow* initWindow();
-void processInput(GLFWwindow* window, Camera& camera, InputHandler& inputHandler, LightManager& lightManager, float deltaTime);
+void processInput(GLFWwindow* window, Camera& camera, InputHandler& inputHandler, LightManager& lightManager, float deltaTime, ShadowScene& shadowScene);
 void processSceneInput(GLFWwindow* window, Scene& currentScene);
 void mouseCallback(GLFWwindow* window, double xpos, double ypos);
 void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
@@ -133,15 +135,13 @@ int main() {
 
     // Initialize instance renderer for models
     InstancedRenderer mineRenderer(
-        mineModelLoader.getPositions(),
-        mineModelLoader.getTexCoords(),
-        mineModelLoader.getNormals(),
+        "Resources/Models/SciFiSpace/SM_Prop_Mine_01.obj",
         "Resources/Textures/PolygonSciFiSpace_Texture_01_A.png",
         10
     );
     mineRenderer.initialize();
 
-    InstancedRenderer alienRenderer(
+    /*InstancedRenderer alienRenderer(
         alienModelLoader.getPositions(),
         alienModelLoader.getTexCoords(),
         alienModelLoader.getNormals(),
@@ -157,7 +157,7 @@ int main() {
         "Resources/Textures/PolygonSciFiSpace_Texture_01_A.png",
         10
     );
-    canonRenderer.initialize();
+    canonRenderer.initialize();*/
 
     const std::vector<std::string> skyboxFaces = {
         "Resources/Skybox/Right.png",
@@ -175,7 +175,7 @@ int main() {
     PerlinNoiseScene perlinNoiseScene(shaderLoader, cam);
     perlinNoiseScene.initialize();
 
-    PostProcessingScene postProcessingScene(shaderLoader, *camera, skybox, mineRenderer, canonRenderer, alienRenderer, WIDTH, HEIGHT);
+    //PostProcessingScene postProcessingScene(shaderLoader, *camera, skybox, mineRenderer, canonRenderer, alienRenderer, WIDTH, HEIGHT);
 
     ShadowScene shadowScene(shaderLoader, cam, skybox, mineRenderer, lightManager);  // Initialize the Shadow Scene
     shadowScene.initialize();  // Setup for Shadow Scene
@@ -197,14 +197,14 @@ int main() {
         lastFrame = currentFrame;
 
         processSceneInput(window, currentScene);  // Handle scene switching input
-        processInput(window, cam, inputHandler, lightManager, deltaTime);  // Handle camera and light input
+        processInput(window, cam, inputHandler, lightManager, deltaTime, shadowScene);  // Pass ShadowScene
 
         cam.update(deltaTime);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Common rendering: Skybox
-        glm::mat4 view = glm::mat4(glm::mat3(cam.getViewMatrix()));
-        skybox.render(cam.getProjectionMatrix() * view);
+        glm::mat4 view = glm::mat4(glm::mat3(cam.GetViewMatrix()));
+        skybox.render(cam.GetProjectionMatrix() * view);
 
         switch (currentScene)
         {
@@ -215,7 +215,6 @@ int main() {
             perlinNoiseScene.render();
             break;
         case SCENE_POST_PROCESSING:
-            postProcessingScene.render(currentEffect);
             break;
         default:
             break;
@@ -262,7 +261,7 @@ void processSceneInput(GLFWwindow* window, Scene& currentScene) {
     }
 }
 
-void processInput(GLFWwindow* window, Camera& camera, InputHandler& inputHandler, LightManager& lightManager, float deltaTime) {
+void processInput(GLFWwindow* window, Camera& camera, InputHandler& inputHandler, LightManager& lightManager, float deltaTime, ShadowScene& shadowScene) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
     }
@@ -312,6 +311,23 @@ void processInput(GLFWwindow* window, Camera& camera, InputHandler& inputHandler
     else if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_RELEASE) {
         tabKeyPressed = false;
     }
+
+    // Movement controls for movable model (Third model)
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+        movableModelPosition.z -= moveSpeed * deltaTime;
+    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+        movableModelPosition.z += moveSpeed * deltaTime;
+    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+        movableModelPosition.x -= moveSpeed * deltaTime;
+    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+        movableModelPosition.x += moveSpeed * deltaTime;
+    if (glfwGetKey(window, GLFW_KEY_PAGE_UP) == GLFW_PRESS)
+        movableModelPosition.y += moveSpeed * deltaTime;
+    if (glfwGetKey(window, GLFW_KEY_PAGE_DOWN) == GLFW_PRESS)
+        movableModelPosition.y -= moveSpeed * deltaTime;
+
+    // Update model position
+    shadowScene.moveModel(movableModelPosition);
 }
 
 void mouseCallback(GLFWwindow* window, double xpos, double ypos) {

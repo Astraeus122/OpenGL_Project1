@@ -7,6 +7,7 @@
 #include "Dependencies/stb_image.h" 
 #include "Dependencies/glm/gtc/matrix_transform.hpp"
 #include "ShaderLoader.h" 
+#include "Dependencies/glm/gtc/type_ptr.hpp"
 
 // Constructor
 TerrainMap::TerrainMap(const std::string& heightmapFile, int width, int height, float maxHeight)
@@ -157,48 +158,40 @@ void TerrainMap::render() {
 
     glUseProgram(shaderProgram);
 
-    // Print out shader program and VAO info
-    std::cout << "Rendering terrain with VAO: " << vao << ", Shader Program: " << shaderProgram << std::endl;
-
-    // Set up texture units
+    // Bind textures
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, grassTexture);
     glUniform1i(glGetUniformLocation(shaderProgram, "grassTexture"), 0);
 
-    // Print out texture IDs
-    std::cout << "Texture IDs: Grass(" << grassTexture << "), Dirt(" << dirtTexture
-        << "), Rock(" << rockTexture << "), Snow(" << snowTexture << ")" << std::endl;
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, dirtTexture);
+    glUniform1i(glGetUniformLocation(shaderProgram, "dirtTexture"), 1);
+
+    glActiveTexture(GL_TEXTURE2);
+    glBindTexture(GL_TEXTURE_2D, rockTexture);
+    glUniform1i(glGetUniformLocation(shaderProgram, "rockTexture"), 2);
+
+    glActiveTexture(GL_TEXTURE3);
+    glBindTexture(GL_TEXTURE_2D, snowTexture);
+    glUniform1i(glGetUniformLocation(shaderProgram, "snowTexture"), 3);
+
+    // Pass the model matrix to the shader
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
 
     // Render the terrain mesh
     glBindVertexArray(vao);
     glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
+}
 
-    // Check for OpenGL errors
-    GLenum error = glGetError();
-    if (error != GL_NO_ERROR) {
-        std::cerr << "OpenGL Error: " << error << std::endl;
-        // Set up texture units
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, grassTexture);
-        glUniform1i(glGetUniformLocation(shaderProgram, "grassTexture"), 0);
+void TerrainMap::resetTransformation() {
+    modelMatrix = glm::mat4(1.0f);
+}
 
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, dirtTexture);
-        glUniform1i(glGetUniformLocation(shaderProgram, "dirtTexture"), 1);
+void TerrainMap::translate(const glm::vec3& offset) {
+    modelMatrix = glm::translate(modelMatrix, offset);
+}
 
-        glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D, rockTexture);
-        glUniform1i(glGetUniformLocation(shaderProgram, "rockTexture"), 2);
-
-        glActiveTexture(GL_TEXTURE3);
-        glBindTexture(GL_TEXTURE_2D, snowTexture);
-        glUniform1i(glGetUniformLocation(shaderProgram, "snowTexture"), 3);
-
-        // Render the terrain mesh
-        glBindVertexArray(vao);
-        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, 0);
-        glBindVertexArray(0);
-    }
-
+void TerrainMap::scale(const glm::vec3& scaleFactor) {
+    modelMatrix = glm::scale(modelMatrix, scaleFactor);
 }

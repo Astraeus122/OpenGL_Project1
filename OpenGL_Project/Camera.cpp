@@ -2,12 +2,14 @@
 #include "Dependencies/glm/gtc/matrix_transform.hpp"
 
 Camera::Camera(GLFWwindow* window, glm::vec3 position, float radius)
-    : window(window), position(position), radius(radius), yaw(-90.0f), pitch(0.0f), automaticMovement(false), fov(45.0f), nearClip(0.1f), farClip(5000.0f) {
+    : window(window), position(position), radius(radius), yaw(-90.0f), pitch(0.0f), automaticMovement(false), fov(90.0f), nearClip(0.1f), farClip(5000.0f) {
     lastX = 400.0f; // Assuming the window width is 800
     lastY = 300.0f; // Assuming the window height is 600
     firstMouse = true;
     sensitivity = 0.1f; 
     front = glm::vec3(0.0f, 0.0f, -1.0f); 
+    // Hide and lock the mouse cursor to the center
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     updateCameraVectors();
 }
 
@@ -66,12 +68,11 @@ void Camera::update(float deltaTime) {
     updateCameraVectors();
 }
 
-glm::mat4 Camera::getViewMatrix() const {
+glm::mat4 Camera::GetViewMatrix() const {
     return glm::lookAt(position, position + front, up);
 }
 
-
-glm::mat4 Camera::getProjectionMatrix() const {
+glm::mat4 Camera::GetProjectionMatrix() const {
     return glm::perspective(glm::radians(fov), 16.0f / 9.0f, nearClip, farClip);
 }
 

@@ -1,10 +1,12 @@
 #include "InstancedRenderer.h"
 #include "Dependencies/glm/gtc/matrix_transform.hpp"
-#include <cstdlib>
-#include <ctime>
+#include <iostream>
+#include "ModelLoader.h"
 
-InstancedRenderer::InstancedRenderer(const std::vector<glm::vec3>& positions, const std::vector<glm::vec2>& texCoords, const std::vector<glm::vec3>& normals, const std::string& texturePath, int instanceCount)
-    : positions(positions), texCoords(texCoords), normals(normals), texture(texturePath), instanceCount(instanceCount) {}
+InstancedRenderer::InstancedRenderer(const std::string& modelPath, const std::string& texturePath, int instanceCount)
+    : texture(texturePath), instanceCount(instanceCount) {
+    loadModelData(modelPath);
+}
 
 InstancedRenderer::~InstancedRenderer() {
     glDeleteVertexArrays(1, &VAO);
@@ -12,6 +14,15 @@ InstancedRenderer::~InstancedRenderer() {
     glDeleteBuffers(1, &texCoordVBO);
     glDeleteBuffers(1, &normalVBO);
     glDeleteBuffers(1, &instanceVBO);
+}
+
+void InstancedRenderer::loadModelData(const std::string& modelPath) {
+    ModelLoader modelLoader(modelPath);
+    modelLoader.loadModel();
+
+    positions = modelLoader.getPositions();
+    texCoords = modelLoader.getTexCoords();
+    normals = modelLoader.getNormals();
 }
 
 void InstancedRenderer::initialize() {
@@ -33,7 +44,7 @@ void InstancedRenderer::initialize() {
         instanceMatrices[i] = model;
     }
 
-
+    // Set up VAO, VBOs
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
     glGenBuffers(1, &texCoordVBO);
@@ -42,21 +53,25 @@ void InstancedRenderer::initialize() {
 
     glBindVertexArray(VAO);
 
+    // Position Buffer
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBufferData(GL_ARRAY_BUFFER, positions.size() * sizeof(glm::vec3), positions.data(), GL_STATIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
     glEnableVertexAttribArray(0);
 
+    // Texture Coordinate Buffer
     glBindBuffer(GL_ARRAY_BUFFER, texCoordVBO);
     glBufferData(GL_ARRAY_BUFFER, texCoords.size() * sizeof(glm::vec2), texCoords.data(), GL_STATIC_DRAW);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void*)0);
     glEnableVertexAttribArray(1);
 
+    // Normal Buffer
     glBindBuffer(GL_ARRAY_BUFFER, normalVBO);
     glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3), normals.data(), GL_STATIC_DRAW);
     glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
     glEnableVertexAttribArray(2);
 
+    // Instance Matrix Buffer
     glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
     glBufferData(GL_ARRAY_BUFFER, instanceCount * sizeof(glm::mat4), instanceMatrices.data(), GL_STATIC_DRAW);
 

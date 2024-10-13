@@ -233,7 +233,7 @@ void PerlinNoiseScene::render() {
     glUseProgram(m_terrainShaderProgram);
 
     glm::mat4 model = glm::mat4(1.0f);
-    glm::mat4 view = m_camera.getViewMatrix();
+    glm::mat4 view = m_camera.GetViewMatrix();
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
 
     glUniformMatrix4fv(glGetUniformLocation(m_terrainShaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(model));

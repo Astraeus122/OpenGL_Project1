@@ -7,7 +7,8 @@ PostProcessingScene::PostProcessingScene(ShaderLoader& shaderLoader, Camera& cam
     InstancedRenderer& mineRenderer, InstancedRenderer& cannonRenderer,
     InstancedRenderer& alienRenderer, unsigned int width, unsigned int height)
     : shaderLoader(shaderLoader), camera(camera), skybox(skybox),
-    mineRenderer(mineRenderer), cannonRenderer(cannonRenderer), alienRenderer(alienRenderer), currentEffect(0) {
+    mineRenderer(mineRenderer), cannonRenderer(cannonRenderer), alienRenderer(alienRenderer), currentEffect(0) 
+{
 
     // Load base scene shaders
     shaderProgram = shaderLoader.CreateProgram("Resources/Shaders/vertex_shader.vert", "Resources/Shaders/fragment_shader.frag");
@@ -89,8 +90,8 @@ void PostProcessingScene::render(int currentEffect) {
 
     // Render the skybox first
     glDepthMask(GL_FALSE); // Disable writing to depth buffer
-    glm::mat4 view = glm::mat4(glm::mat3(camera.getViewMatrix())); // Remove translation from the view matrix
-    skybox.render(camera.getProjectionMatrix() * view);
+    //glm::mat4 view = glm::mat4(glm::mat3(camera.getViewMatrix())); // Remove translation from the view matrix
+    //skybox.render(camera.getProjectionMatrix() * view);
     glDepthMask(GL_TRUE); // Enable depth buffer writing
 
     // Set up shader program
@@ -101,8 +102,8 @@ void PostProcessingScene::render(int currentEffect) {
     float rotationAngle = glm::radians(glfwGetTime() * 20.0f);
     modelMatrix = glm::rotate(modelMatrix, rotationAngle, glm::vec3(0.0f, 1.0f, 0.0f));
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &modelMatrix[0][0]);
-    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_FALSE, &camera.getViewMatrix()[0][0]);
-    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, &camera.getProjectionMatrix()[0][0]);
+    //glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_FALSE, &camera.getViewMatrix()[0][0]);
+    //glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, &camera.getProjectionMatrix()[0][0]);
     mineRenderer.render(shaderProgram, modelMatrix);
 
     // Render the cannon

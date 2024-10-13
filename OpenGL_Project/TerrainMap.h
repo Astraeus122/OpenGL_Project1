@@ -1,12 +1,10 @@
-// TerrainMap.h
+#ifndef TERRAINMAP_H
+#define TERRAINMAP_H
 
-#ifndef TERRAIN_MAP_H
-#define TERRAIN_MAP_H
-
-#include <vector>
 #include <string>
+#include <vector>
+#include <glew.h>
 #include "Dependencies/glm/glm.hpp"
-#include "Dependencies/GLEW/glew.h"
 
 class TerrainMap {
 public:
@@ -16,17 +14,25 @@ public:
     void initialize();
     void render();
 
+    // Transformation methods
+    void resetTransformation();
+    void translate(const glm::vec3& offset);
+    void scale(const glm::vec3& scaleFactor);
+
 private:
     std::string heightmapFile;
     int width, height;
     float maxHeight;
-    GLuint vao, vbo, ebo;
-    GLuint grassTexture, dirtTexture, rockTexture, snowTexture; // Texture handles
-    GLuint shaderProgram; // Shader program for terrain
+    std::vector<unsigned char> heightmap;
     std::vector<glm::vec3> vertices;
     std::vector<glm::vec3> normals;
     std::vector<GLuint> indices;
-    std::vector<unsigned char> heightmap;
+
+    GLuint vao, vbo, ebo;
+    GLuint grassTexture, dirtTexture, rockTexture, snowTexture;
+    GLuint shaderProgram;
+
+    glm::mat4 modelMatrix; // Added
 
     void loadHeightmapData();
     void createTerrainMesh();
@@ -35,4 +41,4 @@ private:
     GLuint loadTexture(const std::string& filePath);
 };
 
-#endif // TERRAIN_MAP_H
+#endif // TERRAINMAP_H

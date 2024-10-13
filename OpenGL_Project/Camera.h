@@ -11,9 +11,10 @@ public:
     void processMouseMovement(float xoffset, float yoffset);
     void processMouseScroll(float yoffset);
     void update(float deltaTime);
-    glm::mat4 getViewMatrix() const;
-    glm::mat4 getProjectionMatrix() const;
+    glm::mat4 GetViewMatrix() const;
+    glm::mat4 GetProjectionMatrix() const;
 
+    glm::vec3 getPosition() const { return position; }
 
     GLFWwindow* window;
     glm::vec3 position;

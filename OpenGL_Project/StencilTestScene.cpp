@@ -14,8 +14,8 @@ void StencilTestScene::render()
 
     // Render the skybox first
     glDepthMask(GL_FALSE);
-    glm::mat4 view = glm::mat4(glm::mat3(camera.getViewMatrix()));
-    skybox.render(camera.getProjectionMatrix() * view);
+    //glm::mat4 view = glm::mat4(glm::mat3(camera.getViewMatrix()));
+    //skybox.render(camera.getProjectionMatrix() * view);
     glDepthMask(GL_TRUE);
 
     // Set up stencil buffer
@@ -31,13 +31,13 @@ void StencilTestScene::render()
     float rotationAngle = glm::radians(glfwGetTime() * 20.0f);
     modelMatrix = glm::rotate(modelMatrix, rotationAngle, glm::vec3(0.0f, 1.0f, 0.0f));
 
-    glm::mat4 viewMatrix = camera.getViewMatrix();
-    glm::mat4 projectionMatrix = camera.getProjectionMatrix();
+    //glm::mat4 viewMatrix = camera.getViewMatrix();
+    //glm::mat4 projectionMatrix = camera.getProjectionMatrix();
 
     // Set uniforms for the regular object
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, &modelMatrix[0][0]);
-    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_FALSE, &viewMatrix[0][0]);
-    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, &projectionMatrix[0][0]);
+    //glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "view"), 1, GL_FALSE, &viewMatrix[0][0]);
+    //glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projection"), 1, GL_FALSE, &projectionMatrix[0][0]);
 
     // Render the model normally
     renderer.render(shaderProgram, modelMatrix);
@@ -53,8 +53,8 @@ void StencilTestScene::render()
     glm::mat4 outlineModelMatrix = glm::scale(modelMatrix, glm::vec3(outlineScale));
 
     glUniformMatrix4fv(glGetUniformLocation(outlineShaderProgram, "model"), 1, GL_FALSE, &outlineModelMatrix[0][0]);
-    glUniformMatrix4fv(glGetUniformLocation(outlineShaderProgram, "view"), 1, GL_FALSE, &viewMatrix[0][0]);
-    glUniformMatrix4fv(glGetUniformLocation(outlineShaderProgram, "projection"), 1, GL_FALSE, &projectionMatrix[0][0]);
+    //glUniformMatrix4fv(glGetUniformLocation(outlineShaderProgram, "view"), 1, GL_FALSE, &viewMatrix[0][0]);
+    //glUniformMatrix4fv(glGetUniformLocation(outlineShaderProgram, "projection"), 1, GL_FALSE, &projectionMatrix[0][0]);
 
     renderer.render(outlineShaderProgram, outlineModelMatrix);
 

@@ -7,7 +7,7 @@ LightManager::LightManager()
     light1.position = glm::vec3(150.0f, 50.0f, 0.0f);
     light1.color = glm::vec3(1.0f, 0.0f, 0.0f); // Red color
 
-    light2.position = glm::vec3(150.0f, 50.0f, 300.0f);
+    light2.position = glm::vec3(150.0f, 50.0f, 150.0f);
     light2.color = glm::vec3(0.0f, 0.0f, 1.0f); // Blue color
 
     directionalLight.direction = glm::vec3(-1.0f, -1.0f, -1.0f);
@@ -123,4 +123,24 @@ void LightManager::renderLightSpheres(const glm::mat4& viewProjectionMatrix) {
         glDrawArrays(GL_TRIANGLES, 0, lightSphereVertexCount);
         glBindVertexArray(0);
     }
+}
+
+glm::vec3 LightManager::getPosition() const
+{
+    return position;
+}
+
+glm::vec3 LightManager::getColor() const
+{
+    return color;
+}
+
+void LightManager::setPosition(const glm::vec3& pos)
+{
+    position = pos;
+}
+
+void LightManager::setColor(const glm::vec3& col)
+{
+    color = col;
 }
