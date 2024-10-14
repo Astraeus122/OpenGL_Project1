@@ -12,12 +12,15 @@ public:
     ~TerrainMap();
 
     void initialize();
-    void render();
+    void renderShadow(GLuint shadowShaderProgram); // For shadow pass
+    void renderNormal(GLuint lightingShaderProgram); // For normal rendering
 
     // Transformation methods
     void resetTransformation();
     void translate(const glm::vec3& offset);
     void scale(const glm::vec3& scaleFactor);
+
+    glm::mat4 getModelMatrix() const { return modelMatrix; } // Getter for model matrix
 
 private:
     std::string heightmapFile;
@@ -30,9 +33,9 @@ private:
 
     GLuint vao, vbo, ebo;
     GLuint grassTexture, dirtTexture, rockTexture, snowTexture;
-    GLuint shaderProgram;
+    GLuint shaderProgram; 
 
-    glm::mat4 modelMatrix; // Added
+    glm::mat4 modelMatrix; // Transformation matrix
 
     void loadHeightmapData();
     void createTerrainMesh();

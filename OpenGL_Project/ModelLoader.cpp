@@ -1,6 +1,6 @@
 #define TINYOBJLOADER_IMPLEMENTATION
-#include "dependencies/tiny_obj_loader.h"
 #include "ModelLoader.h"
+#include "dependencies/tiny_obj_loader.h"
 #include <iostream>
 
 ModelLoader::ModelLoader(const std::string& modelPath)
@@ -26,24 +26,24 @@ void ModelLoader::loadModel() {
 
     for (const auto& shape : shapes) {
         for (const auto& index : shape.mesh.indices) {
-            positions.push_back(glm::vec3(
+            positions.emplace_back(glm::vec3(
                 attrib.vertices[3 * index.vertex_index + 0],
                 attrib.vertices[3 * index.vertex_index + 1],
                 attrib.vertices[3 * index.vertex_index + 2]
             ));
 
-            texCoords.push_back(glm::vec2(
+            texCoords.emplace_back(glm::vec2(
                 attrib.texcoords[2 * index.texcoord_index + 0],
                 1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
             ));
 
-            normals.push_back(glm::vec3(
+            normals.emplace_back(glm::vec3(
                 attrib.normals[3 * index.normal_index + 0],
                 attrib.normals[3 * index.normal_index + 1],
                 attrib.normals[3 * index.normal_index + 2]
             ));
 
-            indices.push_back(indices.size());
+            indices.emplace_back(static_cast<unsigned int>(indices.size()));
         }
     }
 
@@ -59,7 +59,11 @@ void ModelLoader::setupMesh() {
 
     // VBO for vertex data (positions, normals, texcoords)
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, positions.size() * sizeof(glm::vec3) + normals.size() * sizeof(glm::vec3) + texCoords.size() * sizeof(glm::vec2), nullptr, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER,
+        positions.size() * sizeof(glm::vec3) +
+        normals.size() * sizeof(glm::vec3) +
+        texCoords.size() * sizeof(glm::vec2),
+        nullptr, GL_STATIC_DRAW);
 
     // Load positions
     glBufferSubData(GL_ARRAY_BUFFER, 0, positions.size() * sizeof(glm::vec3), positions.data());
@@ -68,7 +72,9 @@ void ModelLoader::setupMesh() {
     glBufferSubData(GL_ARRAY_BUFFER, positions.size() * sizeof(glm::vec3), normals.size() * sizeof(glm::vec3), normals.data());
 
     // Load texture coordinates
-    glBufferSubData(GL_ARRAY_BUFFER, positions.size() * sizeof(glm::vec3) + normals.size() * sizeof(glm::vec3), texCoords.size() * sizeof(glm::vec2), texCoords.data());
+    glBufferSubData(GL_ARRAY_BUFFER,
+        positions.size() * sizeof(glm::vec3) + normals.size() * sizeof(glm::vec3),
+        texCoords.size() * sizeof(glm::vec2), texCoords.data());
 
     // Setup indices for EBO
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
@@ -80,11 +86,13 @@ void ModelLoader::setupMesh() {
     glEnableVertexAttribArray(0);
 
     // Normals
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)(positions.size() * sizeof(glm::vec3)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3),
+        (void*)(positions.size() * sizeof(glm::vec3)));
     glEnableVertexAttribArray(1);
 
     // Texture coordinates
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void*)(positions.size() * sizeof(glm::vec3) + normals.size() * sizeof(glm::vec3)));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2),
+        (void*)(positions.size() * sizeof(glm::vec3) + normals.size() * sizeof(glm::vec3)));
     glEnableVertexAttribArray(2);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -94,14 +102,12 @@ void ModelLoader::setupMesh() {
 void ModelLoader::render(GLuint shaderProgram, const glm::mat4& view, const glm::mat4& projection) {
     glUseProgram(shaderProgram);
 
+    // Set transformation matrices
     GLuint modelLoc = glGetUniformLocation(shaderProgram, "model");
     GLuint viewLoc = glGetUniformLocation(shaderProgram, "view");
     GLuint projLoc = glGetUniformLocation(shaderProgram, "projection");
 
-    // Apply scaling to reduce the model size 
-    glm::mat4 scaledModelMatrix = glm::scale(modelMatrix, glm::vec3(0.1f)); // Scale down by 0.1
-
-    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(scaledModelMatrix));
+    glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(modelMatrix));
     glUniformMatrix4fv(viewLoc, 1, GL_FALSE, glm::value_ptr(view));
     glUniformMatrix4fv(projLoc, 1, GL_FALSE, glm::value_ptr(projection));
 
@@ -110,25 +116,25 @@ void ModelLoader::render(GLuint shaderProgram, const glm::mat4& view, const glm:
     glBindVertexArray(0);
 }
 
-// Transformation methods
+// Transformation Methods
 void ModelLoader::rotate(float radians, const glm::vec3& axis) {
     modelMatrix = glm::rotate(modelMatrix, radians, axis);
 }
 
 void ModelLoader::translate(const glm::vec3& offset) {
-    modelMatrix = glm::translate(glm::mat4(1.0f), offset) * modelMatrix; // Reset translation before applying new one
+    std::cout << "Translating model by: " << offset.x << ", " << offset.y << ", " << offset.z << std::endl;
+    modelMatrix = glm::translate(modelMatrix, offset);  // Apply translation
 }
 
 void ModelLoader::scale(const glm::vec3& scaleFactor) {
-    modelMatrix = glm::scale(glm::mat4(1.0f), scaleFactor) * modelMatrix; // Reset scale before applying new one
+    modelMatrix = glm::scale(modelMatrix, scaleFactor) * modelMatrix;
 }
 
-void ModelLoader::resetTransformation()
-{
-    modelMatrix = glm::mat4(1.0f); // Reset to identity matrix
+void ModelLoader::resetTransformation() {
+    modelMatrix = glm::mat4(1.0f);
 }
 
-// Getters for positions, texCoords, normals
+// Getters
 const std::vector<glm::vec3>& ModelLoader::getPositions() const {
     return positions;
 }

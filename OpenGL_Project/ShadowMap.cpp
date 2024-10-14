@@ -1,6 +1,7 @@
 #include "ShadowMap.h"
 
-ShadowMap::ShadowMap() : depthMapFBO(0), depthMap(0), shadowWidth(2048), shadowHeight(2048) {}
+ShadowMap::ShadowMap() : depthMapFBO(0), depthMap(0), shadowWidth(4096), shadowHeight(4096) {}
+
 
 ShadowMap::~ShadowMap()
 {
@@ -17,9 +18,11 @@ void ShadowMap::init(unsigned int width, unsigned int height)
 
     glGenTextures(1, &depthMap);
     glBindTexture(GL_TEXTURE_2D, depthMap);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, shadowWidth, shadowHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, shadowWidth, shadowHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+    // Use linear filtering for smoother shadows
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    // Set texture wrapping to clamp to border to avoid shadow artifacts
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
     float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -32,12 +35,14 @@ void ShadowMap::init(unsigned int width, unsigned int height)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+
 void ShadowMap::setLightPosition(const glm::vec3& lightDir)
 {
     glm::mat4 lightProjection, lightView;
-    float near_plane = 1.0f, far_plane = 100.0f;
-    lightProjection = glm::ortho(-50.0f, 50.0f, -50.0f, 50.0f, near_plane, far_plane);
-    lightView = glm::lookAt(-lightDir * 50.0f, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
+    float near_plane = 1.0f, far_plane = 5000.0f; 
+
+    lightProjection = glm::ortho(-3000.0f, 3000.0f, -3000.0f, 3000.0f, near_plane, far_plane);
+    lightView = glm::lookAt(-lightDir * 3000.0f, glm::vec3(0.0f), glm::vec3(0.0, 1.0, 0.0));
     lightSpaceMatrix = lightProjection * lightView;
 }
 

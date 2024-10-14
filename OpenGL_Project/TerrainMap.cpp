@@ -1,6 +1,5 @@
 // TerrainMap.cpp
 
-
 #include "TerrainMap.h"
 #include <fstream>
 #include <iostream>
@@ -32,12 +31,7 @@ void TerrainMap::initialize() {
     createTerrainMesh();
     computeNormals();
     loadTextures();
-
-    // Load shaders with correct extensions and paths
-    ShaderLoader shaderLoader;
-    shaderProgram = shaderLoader.CreateProgram("Resources/Shaders/terrain_vertex.vert", "Resources/Shaders/terrain_fragment.frag");
 }
-
 
 // Load heightmap data from the file
 void TerrainMap::loadHeightmapData() {
@@ -153,30 +147,27 @@ GLuint TerrainMap::loadTexture(const std::string& filePath) {
     return textureID;
 }
 
-// Render the terrain
-void TerrainMap::render() {
+// Render the terrain for the shadow pass
+void TerrainMap::renderShadow(GLuint shadowShaderProgram) {
+    glUseProgram(shadowShaderProgram);
 
-    glUseProgram(shaderProgram);
+    // Pass the model matrix to the shadow shader
+    glUniformMatrix4fv(glGetUniformLocation(shadowShaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
 
-    // Bind textures
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, grassTexture);
-    glUniform1i(glGetUniformLocation(shaderProgram, "grassTexture"), 0);
+    // Render the terrain mesh
+    glBindVertexArray(vao);
+    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(indices.size()), GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
+}
 
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, dirtTexture);
-    glUniform1i(glGetUniformLocation(shaderProgram, "dirtTexture"), 1);
+void TerrainMap::renderNormal(GLuint lightingShaderProgram) {
+    glUseProgram(lightingShaderProgram);
 
-    glActiveTexture(GL_TEXTURE2);
-    glBindTexture(GL_TEXTURE_2D, rockTexture);
-    glUniform1i(glGetUniformLocation(shaderProgram, "rockTexture"), 2);
+    // Set the 'isTerrain' uniform to true
+    glUniform1i(glGetUniformLocation(lightingShaderProgram, "isTerrain"), 1);
 
-    glActiveTexture(GL_TEXTURE3);
-    glBindTexture(GL_TEXTURE_2D, snowTexture);
-    glUniform1i(glGetUniformLocation(shaderProgram, "snowTexture"), 3);
-
-    // Pass the model matrix to the shader
-    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
+    // Pass the model matrix to the lighting shader
+    glUniformMatrix4fv(glGetUniformLocation(lightingShaderProgram, "model"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
 
     // Render the terrain mesh
     glBindVertexArray(vao);

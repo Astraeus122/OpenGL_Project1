@@ -20,7 +20,9 @@ public:
     void initialize();
     void render();
     void renderShadowPass(int lightIndex);
-    void moveModel(const glm::vec3& newPosition);
+
+    // Add getter for movable model
+    ModelLoader& getMovableModel() { return models[movableModelIndex]; }
 
 private:
     ShaderLoader& shaderLoader;
@@ -35,9 +37,6 @@ private:
 
     TerrainMap terrain;
     std::vector<ModelLoader> models; // List of loaded models
-
-    // Position vectors for each model
-    std::vector<glm::vec3> modelPositions;
 
     GLuint shadowShaderProgram;
     GLuint lightingShaderProgram;

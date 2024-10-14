@@ -21,6 +21,7 @@ public:
     void scale(const glm::vec3& scaleFactor);
     void resetTransformation();
     glm::mat4 getModelMatrix() const { return modelMatrix; }
+    void setModelMatrix(const glm::mat4& matrix) { modelMatrix = matrix; }
 
     // Getters for positions, texcoords, normals
     const std::vector<glm::vec3>& getPositions() const;

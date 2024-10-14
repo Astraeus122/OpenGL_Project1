@@ -2,5 +2,6 @@
 
 void main()
 {
-    // Depth value is automatically written to gl_FragDepth
+    float depth = gl_FragCoord.z;
+    gl_FragDepth = depth;
 }

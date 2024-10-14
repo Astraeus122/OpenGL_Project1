@@ -4,6 +4,8 @@
 #include <vector>
 #include "Dependencies/glm/glm.hpp"
 #include "Dependencies/glm/gtc/matrix_transform.hpp"
+#include "Dependencies/glm/ext/scalar_common.hpp" // For scalar lerp
+#include "Dependencies/glm/ext/vector_common.hpp" // For vector lerp
 #include "ShaderLoader.h"
 #include "Camera.h"
 #include "ModelLoader.h"
@@ -16,13 +18,10 @@
 #include "PerlinNoiseScene.h"
 #include "ShadowScene.h" 
 
-const unsigned int WIDTH = 800;
-const unsigned int HEIGHT = 600;
+const unsigned int WIDTH = 1920;
+const unsigned int HEIGHT = 1080;
 
-glm::vec3 movableModelPosition(20.0f, 0.0f, 20.0f); // Initial position of movable model
-float moveSpeed = 10.0f; // Units per second
-
-enum Scene 
+enum Scene
 {
     SCENE_SHADOW,
     SCENE_PERLIN_NOISE,
@@ -96,7 +95,8 @@ void initFramebuffers() {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-int main() {
+int main() 
+{
     GLFWwindow* window = initWindow();
     if (!window) {
         return -1;
@@ -192,7 +192,7 @@ int main() {
 
     // Main rendering loop
     while (!glfwWindowShouldClose(window)) {
-        float currentFrame = glfwGetTime();
+        float currentFrame = static_cast<float>(glfwGetTime());
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
@@ -210,6 +210,7 @@ int main() {
         {
         case SCENE_SHADOW:
             shadowScene.render();  // Render the Shadow Scene
+            skybox.render(cam.GetProjectionMatrix() * view);
             break;
         case SCENE_PERLIN_NOISE:
             perlinNoiseScene.render();
@@ -303,31 +304,31 @@ void processInput(GLFWwindow* window, Camera& camera, InputHandler& inputHandler
         spotLightTogglePressed = false;
     }
 
-    // Handle post-processing effect cycling
-    if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS && !tabKeyPressed) {
-        currentEffect = (currentEffect + 1) % 4;
-        tabKeyPressed = true;
-    }
-    else if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_RELEASE) {
-        tabKeyPressed = false;
-    }
+    // Smooth Movement Logic for Movable Model
+    ModelLoader& movableModel = shadowScene.getMovableModel();
 
-    // Movement controls for movable model (Third model)
-    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-        movableModelPosition.z -= moveSpeed * deltaTime;
-    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-        movableModelPosition.z += moveSpeed * deltaTime;
-    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-        movableModelPosition.x -= moveSpeed * deltaTime;
-    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-        movableModelPosition.x += moveSpeed * deltaTime;
-    if (glfwGetKey(window, GLFW_KEY_PAGE_UP) == GLFW_PRESS)
-        movableModelPosition.y += moveSpeed * deltaTime;
-    if (glfwGetKey(window, GLFW_KEY_PAGE_DOWN) == GLFW_PRESS)
-        movableModelPosition.y -= moveSpeed * deltaTime;
+    // Set a base speed for the model's movement
+    float speed = 80.0f * deltaTime;
 
-    // Update model position
-    shadowScene.moveModel(movableModelPosition);
+    // Handle arrow key movement for the model
+    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+        movableModel.translate(camera.front * speed);  // Move forward
+    }
+    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+        movableModel.translate(-camera.front * speed);  // Move backward
+    }
+    if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+        movableModel.translate(-camera.right * speed);  // Move left
+    }
+    if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+        movableModel.translate(camera.right * speed);  // Move right
+    }
+    if (glfwGetKey(window, GLFW_KEY_PAGE_UP) == GLFW_PRESS) {
+        movableModel.translate(camera.up * speed);  // Move up
+    }
+    if (glfwGetKey(window, GLFW_KEY_PAGE_DOWN) == GLFW_PRESS) {
+        movableModel.translate(-camera.up * speed);  // Move down
+    }
 }
 
 void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
@@ -336,19 +337,19 @@ void mouseCallback(GLFWwindow* window, double xpos, double ypos) {
     static bool firstMouse = true;
 
     if (firstMouse) {
-        lastX = xpos;
-        lastY = ypos;
+        lastX = static_cast<float>(xpos);
+        lastY = static_cast<float>(ypos);
         firstMouse = false;
     }
 
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos;
-    lastX = xpos;
-    lastY = ypos;
+    float xoffset = static_cast<float>(xpos) - lastX;
+    float yoffset = lastY - static_cast<float>(ypos);
+    lastX = static_cast<float>(xpos);
+    lastY = static_cast<float>(ypos);
 
     camera->processMouseMovement(xoffset, yoffset);
 }
 
 void scrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
-    camera->processMouseScroll(yoffset);
+    camera->processMouseScroll(static_cast<float>(yoffset));
 }

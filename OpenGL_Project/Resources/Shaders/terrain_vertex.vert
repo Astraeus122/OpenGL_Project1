@@ -1,3 +1,4 @@
+// terrain_vertex_shader.glsl
 #version 330 core
 
 layout (location = 0) in vec3 aPos; // Vertex position
@@ -10,7 +11,7 @@ uniform float maxHeight;
 
 out vec3 FragPos; // Position of the fragment for lighting
 out vec3 Normal; // Normal of the fragment for lighting
-out vec2 TexCoords; // Texture coordinates for blending based on height
+out float Height; // Pass height as a float to the fragment shader
 
 void main() 
 {
@@ -21,9 +22,10 @@ void main()
     // Compute the normal in world space
     Normal = mat3(transpose(inverse(model))) * aNormal; 
 
-    // Compute texture coordinates based on the height
-    TexCoords = vec2(aPos.x, aPos.z / maxHeight); 
+    // Compute height based on y-coordinate
+    Height = aPos.y / maxHeight; // Normalize height based on maxHeight
 
     // Transform the vertex position to clip space
     gl_Position = projection * view * worldPosition; 
 }
+
