@@ -5,6 +5,7 @@
 #include <vector>
 #include <glew.h>
 #include <string>
+#include <mutex>
 
 class ParticleSystem
 {
@@ -18,7 +19,7 @@ public:
 
     GLuint renderShaderProgram;
     GLuint vao;
-    GLuint particleBuffer; // Single buffer for both VBO and SSBO
+    GLuint particleBuffer;
     int maxParticles = 100000;
 
     struct Particle {
@@ -26,6 +27,7 @@ public:
         glm::vec4 vel;
         glm::vec4 color;
     };
+
     void triggerFirework(const glm::vec3& position, const glm::vec4& color);
 
 private:
@@ -33,6 +35,9 @@ private:
     GLuint compileShader(const char* shaderSource, GLenum shaderType);
     GLuint createShaderProgram(const char* computeShaderSource, const char* vertexShaderSource, const char* fragmentShaderSource);
     std::string readShaderSourceFromFile(const std::string& shaderFilePath);
+
+    std::mutex fireworkMutex;
+    int currentIndex = 0;     // Tracks the next available slot in the buffer
 };
 
 #endif

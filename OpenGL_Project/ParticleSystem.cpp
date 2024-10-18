@@ -30,7 +30,6 @@ ParticleSystem::~ParticleSystem()
     glDeleteProgram(renderShaderProgram);
     glDeleteBuffers(1, &particleBuffer);
     glDeleteVertexArrays(1, &vao);
-    glDeleteBuffers(1, &particleBuffer);
 }
 
 void ParticleSystem::init()
@@ -189,15 +188,22 @@ GLuint ParticleSystem::createShaderProgram(const char* computeShaderSource, cons
 }
 
 void ParticleSystem::triggerFirework(const glm::vec3& position, const glm::vec4& color) {
+    std::lock_guard<std::mutex> lock(fireworkMutex); // Ensure thread safety
+
     // Number of particles per firework
     int particlesPerFirework = 25000; // 100000 / 4
+
+    if (currentIndex + particlesPerFirework > maxParticles) {
+        std::cout << "Particle buffer full, cannot trigger more fireworks at the moment." << std::endl;
+        return;
+    }
 
     std::vector<Particle> fireworkParticles(particlesPerFirework);
     std::random_device rd;
     std::mt19937 gen(rd());
     std::uniform_real_distribution<float> angleDist(0.0f, 2.0f * glm::pi<float>());
-    std::uniform_real_distribution<float> phiDist(0.0f, glm::pi<float>());
-    std::uniform_real_distribution<float> speedDist(5.0f, 15.0f);
+    std::uniform_real_distribution<float> phiDist(0.0f, glm::half_pi<float>()); // Changed from 0 to pi
+    std::uniform_real_distribution<float> speedDist(15.0f, 25.0f); // Increased speed for better upward motion
 
     for (int i = 0; i < particlesPerFirework; ++i)
     {
@@ -210,7 +216,7 @@ void ParticleSystem::triggerFirework(const glm::vec3& position, const glm::vec4&
         float speed = speedDist(gen);
 
         float vx = speed * sin(phi) * cos(theta);
-        float vy = speed * cos(phi);
+        float vy = speed * cos(phi); // Ensured positive Y for upward movement
         float vz = speed * sin(phi) * sin(theta);
 
         fireworkParticles[i].vel = glm::vec4(vx, vy, vz, 0.0f);
@@ -219,6 +225,14 @@ void ParticleSystem::triggerFirework(const glm::vec3& position, const glm::vec4&
         fireworkParticles[i].color = color;
     }
 
+    // Update the buffer with new particles
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, particleBuffer);
-    glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, particlesPerFirework * sizeof(Particle), fireworkParticles.data());
+    glBufferSubData(GL_SHADER_STORAGE_BUFFER, currentIndex * sizeof(Particle), particlesPerFirework * sizeof(Particle), fireworkParticles.data());
+
+    // Update the current index
+    currentIndex += particlesPerFirework;
+
+    if (currentIndex >= maxParticles) {
+        currentIndex = 0;
+    }
 }

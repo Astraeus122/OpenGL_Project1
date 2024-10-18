@@ -33,11 +33,10 @@ void main()
     float alpha = clamp(particles[idx].pos.y / 50.0, 0.0, 1.0);
     particles[idx].color.a = alpha;
 
-    // If the particle goes below y = -10.0, reset it
-    if (particles[idx].pos.y < -10.0)
+    // If the particle goes below y = 0.0, deactivate it instead of resetting to origin
+    if (particles[idx].pos.y < 0.0)
     {
-        particles[idx].pos = vec4(0.0, 0.0, 0.0, 1.0); // Reset to origin
-        particles[idx].vel = vec4(0.0, 10.0, 0.0, 0.0); // Upward velocity
-        particles[idx].color = vec4(1.0); // Reset color to white
+        // Deactivate particle by setting alpha to 0.0
+        particles[idx].color.a = 0.0;
     }
 }

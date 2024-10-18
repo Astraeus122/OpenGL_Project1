@@ -481,12 +481,15 @@ void processInput(GLFWwindow* window, Camera& camera, InputHandler& inputHandler
         static bool fKeyPressed = false;
         if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) {
             if (!fKeyPressed) {
+                // Define spawn parameters
+                float distance = 30.0f;
+                float yOffset = -30.0f; 
+
                 // Trigger multiple fireworks
                 for (int i = 0; i < 4; ++i) {
-                    // Calculate position in front of camera with some offset
-                    float distance = 20.0f; // Adjust distance as needed
+                    // Calculate spawn position with adjusted distance and Y-offset
                     glm::vec3 spawnPos = camera.getPosition() + camera.front * distance
-                        + glm::vec3(((rand() % 5) - 2) * 2.0f, 0.0f, ((rand() % 5) - 2) * 2.0f); // Spread fireworks a bit
+                        + glm::vec3(((rand() % 5) - 2) * 5.0f, yOffset, ((rand() % 5) - 2) * 5.0f); 
 
                     // Assign random color
                     glm::vec4 color = glm::vec4(static_cast<float>(rand()) / RAND_MAX,
