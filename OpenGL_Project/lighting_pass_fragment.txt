@@ -1,0 +1,119 @@
+#version 330 core
+
+// Define the maximum number of point lights at the top
+#define MAX_POINT_LIGHTS 10
+
+out vec4 FragColor;
+
+in vec2 TexCoords;
+
+// G-buffer textures
+uniform sampler2D gPosition;
+uniform sampler2D gNormal;
+uniform sampler2D gAlbedoSpec;
+
+// Lighting uniforms
+uniform vec3 viewPos;
+
+struct PointLight {
+    vec3 Position;
+    vec3 Color;
+    float Linear;
+    float Quadratic;
+};
+uniform int numLights;
+uniform PointLight pointLights[MAX_POINT_LIGHTS];
+
+struct DirLight {
+    vec3 direction;
+    vec3 color;
+};
+uniform DirLight dirLight;
+
+struct SpotLight {
+    vec3 position;
+    vec3 direction;
+    vec3 color;
+    float cutOff;
+    float outerCutOff;
+};
+uniform SpotLight spotLight;
+
+void main()
+{
+    // Retrieve data from G-buffer
+    vec3 FragPos = texture(gPosition, TexCoords).rgb;
+    vec3 Normal = normalize(texture(gNormal, TexCoords).rgb);
+    vec4 AlbedoSpec = texture(gAlbedoSpec, TexCoords);
+    vec3 Albedo = AlbedoSpec.rgb;
+    float Specular = AlbedoSpec.a;
+
+    // Ambient lighting
+    vec3 ambient = 0.1 * Albedo;
+
+    // Initialize the lighting result
+    vec3 lighting = ambient;
+
+    // Directional Light
+    if(dirLight.color != vec3(0.0)) {
+        vec3 lightDir = normalize(-dirLight.direction);
+        float diff = max(dot(Normal, lightDir), 0.0);
+        vec3 diffuse = diff * dirLight.color;
+
+        // Specular
+        vec3 viewDir = normalize(viewPos - FragPos);
+        vec3 halfwayDir = normalize(lightDir + viewDir);
+        float spec = pow(max(dot(Normal, halfwayDir), 0.0), 16.0);
+        vec3 specular = spec * Specular * dirLight.color;
+
+        lighting += (diffuse + specular) * Albedo;
+    }
+
+    // SpotLight
+    if(spotLight.color != vec3(0.0)) {
+        vec3 lightDir = normalize(spotLight.position - FragPos);
+        float theta = dot(lightDir, normalize(-spotLight.direction));
+
+        float epsilon = spotLight.cutOff - spotLight.outerCutOff;
+        float intensity = clamp((theta - spotLight.outerCutOff) / epsilon, 0.0, 1.0);
+
+        if(theta > spotLight.outerCutOff) {
+            float diff = max(dot(Normal, lightDir), 0.0);
+            vec3 diffuse = diff * spotLight.color;
+
+            // Specular
+            vec3 viewDir = normalize(viewPos - FragPos);
+            vec3 halfwayDir = normalize(lightDir + viewDir);
+            float spec = pow(max(dot(Normal, halfwayDir), 0.0), 16.0);
+            vec3 specular = spec * Specular * spotLight.color;
+
+            lighting += (diffuse + specular) * Albedo * intensity;
+        }
+    }
+
+    // Point Lights
+    for(int i = 0; i < numLights; ++i)
+    {
+        // Diffuse
+        vec3 lightDir = normalize(pointLights[i].Position - FragPos);
+        float diff = max(dot(Normal, lightDir), 0.0);
+        vec3 diffuse = diff * pointLights[i].Color;
+
+        // Specular
+        vec3 viewDir = normalize(viewPos - FragPos);
+        vec3 halfwayDir = normalize(lightDir + viewDir);
+        float spec = pow(max(dot(Normal, halfwayDir), 0.0), 16.0);
+        vec3 specular = spec * Specular * pointLights[i].Color;
+
+        // Attenuation
+        float distance = length(pointLights[i].Position - FragPos);
+        float attenuation = 1.0 / (1.0 + pointLights[i].Linear * distance + pointLights[i].Quadratic * (distance * distance));
+
+        diffuse *= attenuation;
+        specular *= attenuation;
+
+        lighting += (diffuse + specular) * Albedo;
+    }
+
+    FragColor = vec4(lighting, 1.0);
+}

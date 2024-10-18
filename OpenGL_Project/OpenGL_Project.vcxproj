@@ -139,12 +139,15 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="DeferredScene.cpp" />
     <ClCompile Include="InputHandler.cpp" />
     <ClCompile Include="InstancedRenderer.cpp" />
     <ClCompile Include="LightManager.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="ModelLoader.cpp" />
+    <ClCompile Include="ParticleSystem.cpp" />
     <ClCompile Include="PerlinNoiseScene.cpp" />
+    <ClCompile Include="Plane.cpp" />
     <ClCompile Include="PostProcessingScene.cpp" />
     <ClCompile Include="ShaderLoader.cpp" />
     <ClCompile Include="ShadowMap.cpp" />
@@ -156,14 +159,18 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="DeferredScene.h" />
     <ClInclude Include="Dependencies\stb_image_write.h" />
     <ClInclude Include="Dependencies\tiny_obj_loader.h" />
     <ClInclude Include="InputHandler.h" />
     <ClInclude Include="InstancedRenderer.h" />
     <ClInclude Include="LightManager.h" />
     <ClInclude Include="ModelLoader.h" />
+    <ClInclude Include="ParticleSystem.h" />
     <ClInclude Include="PerlinNoiseScene.h" />
+    <ClInclude Include="Plane.h" />
     <ClInclude Include="PostProcessingScene.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="ShaderLoader.h" />
     <ClInclude Include="ShadowMap.h" />
     <ClInclude Include="ShadowScene.h" />
@@ -198,12 +205,24 @@
   <ItemGroup>
     <Text Include="2d_perlin_fragment_shader.txt" />
     <Text Include="2d_perlin_vertex_shader.txt" />
+    <Text Include="geometry_pass_fragment.txt" />
+    <Text Include="geometry_pass_vertex.txt" />
+    <Text Include="lighting_box_fragment.txt" />
+    <Text Include="lighting_box_vertex.txt" />
+    <Text Include="lighting_pass_fragment.txt" />
+    <Text Include="lighting_pass_vertex.txt" />
+    <Text Include="particle_compute.txt" />
+    <Text Include="particle_fragment.txt" />
+    <Text Include="particle_vertex.txt" />
     <Text Include="perlin_fragment_shader.txt" />
     <Text Include="perlin_vertex_shader.txt" />
     <Text Include="Resources\Shaders\lighting_fragment_shader.txt" />
     <Text Include="Resources\Shaders\lighting_vertex_shader.txt" />
     <Text Include="Resources\Shaders\shadow_fragment_shader.txt" />
     <Text Include="Resources\Shaders\shadow_vertex_shader.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="OpenGL_Project.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

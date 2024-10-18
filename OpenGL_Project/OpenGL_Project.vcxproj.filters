@@ -57,6 +57,18 @@
     <ClCompile Include="ShadowScene.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ShadowMap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DeferredScene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Plane.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ShaderLoader.h">
@@ -102,6 +114,21 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ShadowScene.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShadowMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DeferredScene.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Plane.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -160,18 +187,6 @@
     <None Include="Resources\Shaders\sobel.frag">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="shadow_fragment_shader.frag">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="lighting_vertex_shader.vert">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="lighting_fragment_shader.frag">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="shadow_vertex_shader.vert">
-      <Filter>Resource Files</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\Heightmap0.jpg">
@@ -191,17 +206,41 @@
     <Text Include="2d_perlin_fragment_shader.txt">
       <Filter>Resource Files</Filter>
     </Text>
-    <Text Include="shadow_vertex_shader.txt">
+    <Text Include="Resources\Shaders\lighting_fragment_shader.txt" />
+    <Text Include="Resources\Shaders\lighting_vertex_shader.txt" />
+    <Text Include="Resources\Shaders\shadow_fragment_shader.txt" />
+    <Text Include="Resources\Shaders\shadow_vertex_shader.txt" />
+    <Text Include="lighting_pass_vertex.txt">
       <Filter>Resource Files</Filter>
     </Text>
-    <Text Include="shadow_fragment_shader.txt">
+    <Text Include="lighting_pass_fragment.txt">
       <Filter>Resource Files</Filter>
     </Text>
-    <Text Include="lighting_vertex_shader.txt">
+    <Text Include="lighting_box_vertex.txt">
       <Filter>Resource Files</Filter>
     </Text>
-    <Text Include="lighting_fragment_shader.txt">
+    <Text Include="lighting_box_fragment.txt">
       <Filter>Resource Files</Filter>
     </Text>
+    <Text Include="geometry_pass_fragment.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="geometry_pass_vertex.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="particle_compute.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="particle_vertex.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="particle_fragment.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="OpenGL_Project.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

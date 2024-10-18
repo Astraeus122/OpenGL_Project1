@@ -1,0 +1,27 @@
+#version 330 core
+
+// G-buffer Outputs
+layout(location = 0) out vec3 gPosition;
+layout(location = 1) out vec3 gNormal;
+layout(location = 2) out vec4 gAlbedoSpec;
+
+// Inputs from Vertex Shader
+in vec3 FragPos;
+in vec3 Normal;
+
+// Uniforms for Object Color and Specular
+uniform vec3 objectAlbedo;    // Albedo color of the object
+uniform float objectSpecular; // Specular intensity of the object
+
+void main()
+{
+    // Store the fragment position vector in the first gbuffer texture
+    gPosition = FragPos;
+    
+    // Store the per-fragment normals in the second gbuffer texture
+    gNormal = normalize(Normal);
+    
+    // Store the albedo and specular intensity in the third gbuffer texture
+    gAlbedoSpec.rgb = objectAlbedo;
+    gAlbedoSpec.a = objectSpecular;
+}

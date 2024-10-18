@@ -28,6 +28,8 @@ public:
     const std::vector<glm::vec2>& getTexCoords() const;
     const std::vector<glm::vec3>& getNormals() const;
 
+    GLuint VAO, VBO, EBO; // OpenGL handles for rendering
+
 private:
     std::string modelPath;
     std::vector<glm::vec3> positions;
@@ -36,8 +38,6 @@ private:
     std::vector<unsigned int> indices;
 
     glm::mat4 modelMatrix = glm::mat4(1.0f); // Transformation matrix
-
-    GLuint VAO, VBO, EBO; // OpenGL handles for rendering
 
     void setupMesh();
 };

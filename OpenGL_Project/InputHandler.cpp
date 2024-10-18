@@ -6,16 +6,6 @@ InputHandler::InputHandler(GLFWwindow* window) : window(window), wireframeMode(f
 void InputHandler::processInput(float deltaTime) {
     static bool wireframeTogglePressed = false;
 
-    if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS) {
-        if (!wireframeTogglePressed) {
-            toggleWireframeMode();
-            wireframeTogglePressed = true;
-        }
-    }
-    else {
-        wireframeTogglePressed = false;
-    }
-
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
         printCursorCoordinates();
     }

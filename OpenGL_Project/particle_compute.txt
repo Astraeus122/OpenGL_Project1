@@ -1,0 +1,43 @@
+#version 430
+
+struct Particle {
+    vec4 pos;
+    vec4 vel;
+    vec4 color;
+};
+
+layout (local_size_x = 256) in;
+
+layout (std430, binding = 0) buffer Particles 
+{
+    Particle particles[];
+};
+
+uniform float uDeltaTime;
+uniform uint uMaxParticles;
+
+void main() 
+{
+    uint idx = gl_GlobalInvocationID.x;
+    // Ensure we don't exceed the particle count
+    if (idx >= uMaxParticles)
+        return;
+
+    // Apply gravity
+    particles[idx].vel.y -= 9.81 * uDeltaTime;
+
+    // Update position
+    particles[idx].pos += particles[idx].vel * uDeltaTime;
+
+    // Fade alpha based on height (simple approach)
+    float alpha = clamp(particles[idx].pos.y / 50.0, 0.0, 1.0);
+    particles[idx].color.a = alpha;
+
+    // If the particle goes below y = -10.0, reset it
+    if (particles[idx].pos.y < -10.0)
+    {
+        particles[idx].pos = vec4(0.0, 0.0, 0.0, 1.0); // Reset to origin
+        particles[idx].vel = vec4(0.0, 10.0, 0.0, 0.0); // Upward velocity
+        particles[idx].color = vec4(1.0); // Reset color to white
+    }
+}
