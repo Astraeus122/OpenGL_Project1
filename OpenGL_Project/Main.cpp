@@ -22,6 +22,7 @@
 #include "DeferredScene.h"
 #include "Plane.h"
 #include "ParticleSystem.h"
+#include "LODScene.h"
 
 // Screen dimensions
 const unsigned int WIDTH = 1920;
@@ -32,7 +33,8 @@ enum Scene
 {
     SCENE_SHADOW,
     SCENE_DEFERRED_RENDERING,
-    SCENE_COMPUTE_SHADER
+    SCENE_COMPUTE_SHADER,
+    SCENE_LOD
 };
 
 // Global variables for framebuffer (if needed)
@@ -112,6 +114,7 @@ void initFramebuffers() {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+
 // Global ParticleSystem pointer
 ParticleSystem* particleSystem = nullptr;
 
@@ -179,6 +182,9 @@ int main()
         10
     );
     mineRenderer.initialize();
+
+    LODScene lodScene(shaderLoader, cam);
+    lodScene.initialize();  // Initialize LOD Scene
 
     // Uncomment and properly initialize other renderers if needed
     /*
@@ -322,6 +328,9 @@ int main()
             // Disable blending after rendering particles
             glDisable(GL_BLEND);
             break;
+        case SCENE_LOD:
+            lodScene.render();  // Add LOD Scene rendering here
+            break;
         default:
             break;
         }
@@ -369,6 +378,7 @@ void processSceneInput(GLFWwindow* window, Scene& currentScene) {
     static bool key1Pressed = false;
     static bool key2Pressed = false;
     static bool key3Pressed = false;
+    static bool key4Pressed = false;  // LOD Scene key
 
     if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS && !key1Pressed) {
         currentScene = SCENE_SHADOW;
@@ -396,7 +406,17 @@ void processSceneInput(GLFWwindow* window, Scene& currentScene) {
     if (glfwGetKey(window, GLFW_KEY_3) == GLFW_RELEASE) {
         key3Pressed = false;
     }
+
+    if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS && !key4Pressed) {
+        currentScene = SCENE_LOD;
+        key4Pressed = true;
+        std::cout << "Switched to Scene 4: LOD Scene" << std::endl;
+    }
+    if (glfwGetKey(window, GLFW_KEY_4) == GLFW_RELEASE) {
+        key4Pressed = false;
+    }
 }
+
 
 // Function to handle general input
 void processInput(GLFWwindow* window, Camera& camera, InputHandler& inputHandler, LightManager& lightManager, float deltaTime, ShadowScene& shadowScene, Scene currentScene) {

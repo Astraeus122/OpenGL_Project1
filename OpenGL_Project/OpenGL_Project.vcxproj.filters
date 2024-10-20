@@ -69,6 +69,9 @@
     <ClCompile Include="ParticleSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="LODScene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ShaderLoader.h">
@@ -131,6 +134,9 @@
     <ClInclude Include="ParticleSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LODScene.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Shaders\fragment_shader.frag">
@@ -185,6 +191,18 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="Resources\Shaders\sobel.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="fragment_shader.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="tess_control_shader.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="tess_evaluation_shader.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="vertex_shader.glsl">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

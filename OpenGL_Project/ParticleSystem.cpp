@@ -75,6 +75,8 @@ void ParticleSystem::update(float deltaTime)
     glUniform1ui(glGetUniformLocation(computeShaderProgram, "uMaxParticles"), maxParticles);
     glDispatchCompute((GLuint)(maxParticles / 256) + 1, 1, 1);
     glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
+    std::cout << "Current Particle Count: " << maxParticles << std::endl;
+
 }
 
 void ParticleSystem::render(const glm::mat4& view, const glm::mat4& projection)
