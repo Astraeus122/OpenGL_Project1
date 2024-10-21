@@ -2,7 +2,7 @@
 #include "Dependencies/glm/gtc/matrix_transform.hpp"
 
 Camera::Camera(GLFWwindow* window, glm::vec3 position, float radius)
-    : window(window), position(position), radius(radius), yaw(-90.0f), pitch(0.0f), automaticMovement(false), fov(90.0f), nearClip(0.1f), farClip(5000.0f) {
+    : window(window), position(position), radius(radius), yaw(-90.0f), pitch(-30.0f), automaticMovement(false), fov(60.0f), nearClip(0.1f), farClip(5000.0f) {
     lastX = 400.0f; // Assuming the window width is 800
     lastY = 300.0f; // Assuming the window height is 600
     firstMouse = true;
@@ -14,7 +14,7 @@ Camera::Camera(GLFWwindow* window, glm::vec3 position, float radius)
 }
 
 void Camera::processInput(float deltaTime) {
-    float speed = 2.5f * deltaTime; // Adjusted base speed for movement
+    float speed = 50.0f * deltaTime; // Adjusted base speed for movement
 
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {
         speed *= 2.0f; // Increase speed when Left Shift is pressed

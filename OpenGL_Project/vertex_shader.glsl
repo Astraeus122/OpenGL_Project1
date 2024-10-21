@@ -1,6 +1,6 @@
 #version 430 core
 
-layout(location = 0) in vec3 inPosition;  // Vertex position
+layout(location = 0) in vec3 inPosition;  // Vertex position input
 
 uniform mat4 modelMatrix;
 uniform mat4 viewMatrix;

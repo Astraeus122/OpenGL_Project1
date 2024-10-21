@@ -142,9 +142,6 @@
     <None Include="Resources\Shaders\fragment_shader.frag">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="Resources\Shaders\vertex_shader.vert">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="Resources\Shaders\skybox_fragment_shader.frag">
       <Filter>Resource Files</Filter>
     </None>
@@ -196,13 +193,16 @@
     <None Include="fragment_shader.glsl">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="vertex_shader.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
     <None Include="tess_control_shader.glsl">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="tess_evaluation_shader.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="vertex_shader.glsl">
+    <None Include="lod_fragment_shader.glsl">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

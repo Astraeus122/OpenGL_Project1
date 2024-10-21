@@ -183,6 +183,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="fragment_shader.glsl" />
+    <None Include="lod_fragment_shader.glsl" />
     <None Include="Resources\Heightmap0.raw" />
     <None Include="Resources\Shaders\blinn_phong.frag" />
     <None Include="Resources\Shaders\blinn_phong.vert" />
@@ -200,7 +201,6 @@
     <None Include="Resources\Shaders\sobel.frag" />
     <None Include="Resources\Shaders\terrain_fragment.frag" />
     <None Include="Resources\Shaders\terrain_vertex.vert" />
-    <None Include="Resources\Shaders\vertex_shader.vert" />
     <None Include="tess_control_shader.glsl" />
     <None Include="tess_evaluation_shader.glsl" />
     <None Include="vertex_shader.glsl" />

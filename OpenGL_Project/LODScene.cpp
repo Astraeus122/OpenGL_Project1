@@ -4,21 +4,36 @@
 #include <iostream>
 
 LODScene::LODScene(ShaderLoader& shaderLoader, Camera& camera)
-    : camera(camera), terrain() {
-
-    // Load and compile shaders
+    : camera(camera), terrain("Resources/Heightmap0.raw", 128, 128, 20.0f), wireframeMode(false)
+{
+    // After each shader creation, add error checking like this:
     vertexShader = shaderLoader.CreateShader(GL_VERTEX_SHADER, "vertex_shader.glsl");
-    tessControlShader = shaderLoader.CreateShader(GL_TESS_CONTROL_SHADER, "tess_control_shader.glsl");
+    if (!vertexShader) {
+        std::cerr << "Vertex Shader compilation failed!" << std::endl;
+    }
+
+  /*  tessControlShader = shaderLoader.CreateShader(GL_TESS_CONTROL_SHADER, "tess_control_shader.glsl");
+    if (!tessControlShader) {
+        std::cerr << "Tessellation Control Shader compilation failed!" << std::endl;
+    }
+
     tessEvalShader = shaderLoader.CreateShader(GL_TESS_EVALUATION_SHADER, "tess_evaluation_shader.glsl");
-    fragmentShader = shaderLoader.CreateShader(GL_FRAGMENT_SHADER, "fragment_shader.glsl");
+    if (!tessEvalShader) {
+        std::cerr << "Tessellation Evaluation Shader compilation failed!" << std::endl;
+    }*/
+
+    fragmentShader = shaderLoader.CreateShader(GL_FRAGMENT_SHADER, "lod_fragment_shader.glsl");
+    if (!fragmentShader) {
+        std::cerr << "Fragment Shader compilation failed!" << std::endl;
+    }
+
 
     shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, tessControlShader);
-    glAttachShader(shaderProgram, tessEvalShader);
+   /* glAttachShader(shaderProgram, tessControlShader);
+    glAttachShader(shaderProgram, tessEvalShader);*/
     glAttachShader(shaderProgram, fragmentShader);
     glLinkProgram(shaderProgram);
-
 
     // Check for linking errors
     int success;
@@ -31,34 +46,52 @@ LODScene::LODScene(ShaderLoader& shaderLoader, Camera& camera)
 }
 
 void LODScene::initialize() {
-    // Set up terrain model matrix
-    modelMatrix = glm::mat4(1.0f);
-    modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, -10.0f, 0.0f)); // Adjust position
-    modelMatrix = glm::scale(modelMatrix, glm::vec3(50.0f, 1.0f, 50.0f)); // Scale terrain
+    // Initialize terrain
+    terrain.initialize();
 
-    terrain.loadPlane();  // Load plane as the terrain
+    // Apply transformations to the terrain
+    terrain.resetTransformation();
+    terrain.translate(glm::vec3(0.0f, -50.0f, 0.0f)); // Adjust position
+    terrain.scale(glm::vec3(50.0f, 1.0f, 50.0f)); // Scale the terrain
 }
 
 void LODScene::update(float deltaTime) {
-    // Add updates (for LOD or camera movement)
+    // Toggle wireframe mode on 'T' keypress
+    static bool tKeyPressed = false;
+    if (glfwGetKey(window, GLFW_KEY_T) == GLFW_PRESS) {
+        if (!tKeyPressed) {
+            wireframeMode = !wireframeMode;  // Toggle wireframe mode
+            if (wireframeMode) {
+                glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);  // Enable wireframe
+            }
+            else {
+                glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);  // Disable wireframe
+            }
+            tKeyPressed = true;
+        }
+    }
+    if (glfwGetKey(window, GLFW_KEY_T) == GLFW_RELEASE) {
+        tKeyPressed = false;
+    }
 }
 
 void LODScene::render() {
     glUseProgram(shaderProgram);
 
-    // Pass model, view, and projection matrices to shaders
-    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(modelMatrix));
+    // Ensure that getModelMatrix() returns a glm::mat4
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(terrain.getModelMatrix()));
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "viewMatrix"), 1, GL_FALSE, glm::value_ptr(camera.GetViewMatrix()));
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projectionMatrix"), 1, GL_FALSE, glm::value_ptr(camera.GetProjectionMatrix()));
 
-    // Pass camera position to tessellation control shader for LOD
+    // Pass camera position for LOD calculations
     glUniform3fv(glGetUniformLocation(shaderProgram, "cameraPos"), 1, glm::value_ptr(camera.getPosition()));
 
-    // Set the number of vertices per patch (for tessellation)
-    glPatchParameteri(GL_PATCH_VERTICES, 3); // Triangle patches for tessellation
+    // Render the terrain using tessellation
+    terrain.renderNormal(shaderProgram);
 
-    // Render the terrain (plane)
-    terrain.render(shaderProgram, camera.GetViewMatrix(), camera.GetProjectionMatrix());
+    glm::vec3 camPos = camera.getPosition();
+    std::cout << "Camera Position: " << camPos.x << ", " << camPos.y << ", " << camPos.z << std::endl;
+
 
     glUseProgram(0);
 }

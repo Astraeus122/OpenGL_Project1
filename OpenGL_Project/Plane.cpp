@@ -34,3 +34,17 @@ void Plane::loadPlane() {
 
     glBindVertexArray(0);
 }
+
+void Plane::render(GLuint shaderProgram, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) {
+    glBindVertexArray(VAO);
+
+    // Optionally pass matrices to the shader if needed
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "viewMatrix"), 1, GL_FALSE, glm::value_ptr(viewMatrix));
+    glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projectionMatrix"), 1, GL_FALSE, glm::value_ptr(projectionMatrix));
+
+    glPatchParameteri(GL_PATCH_VERTICES, 3);  // Ensure triangle patches for tessellation
+    glDrawArrays(GL_PATCHES, 0, 6);  // Draw 6 vertices forming 2 triangles (1 patch)
+
+    glBindVertexArray(0);
+}
+

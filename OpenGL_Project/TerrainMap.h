@@ -20,7 +20,7 @@ public:
     void translate(const glm::vec3& offset);
     void scale(const glm::vec3& scaleFactor);
 
-    glm::mat4 getModelMatrix() const { return modelMatrix; } // Getter for model matrix
+    glm::mat4 getModelMatrix() const { return modelMatrix; } // Ensure this returns a glm::mat4
 
 private:
     std::string heightmapFile;
@@ -33,7 +33,7 @@ private:
 
     GLuint vao, vbo, ebo;
     GLuint grassTexture, dirtTexture, rockTexture, snowTexture;
-    GLuint shaderProgram; 
+    GLuint shaderProgram;
 
     glm::mat4 modelMatrix; // Transformation matrix
 

@@ -1,26 +1,31 @@
-#pragma once
+#ifndef LODSCENE_H
+#define LODSCENE_H
 
 #include "ShaderLoader.h"
 #include "Camera.h"
-#include "Plane.h" // Or your terrain object class
+#include "TerrainMap.h"  // Corrected class name
 
 class LODScene {
 public:
     LODScene(ShaderLoader& shaderLoader, Camera& camera);
 
     void initialize();
-    void render();
     void update(float deltaTime);
+    void render();
 
 private:
     GLuint shaderProgram;
-    GLuint tessControlShader;
-    GLuint tessEvalShader;
-    GLuint vertexShader;
-    GLuint fragmentShader;
+    GLuint vertexShader, tessControlShader, tessEvalShader, fragmentShader;
 
     Camera& camera;
-    Plane terrain;  // You can replace this with your custom terrain object
+    TerrainMap terrain;  // Corrected class name
 
     glm::mat4 modelMatrix;
+
+    bool wireframeMode;
+
+    // Window handle for GLFW input
+    GLFWwindow* window;
 };
+
+#endif
