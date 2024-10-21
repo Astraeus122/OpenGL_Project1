@@ -1,0 +1,28 @@
+#version 450 core
+
+layout(quads, equal_spacing, cw) in;
+
+uniform mat4 projection;
+uniform mat4 view;
+uniform mat4 model;
+
+in vec2 TexCoord[];
+out vec2 FragTexCoord;
+
+void main()
+{
+    float u = gl_TessCoord.x;
+    float v = gl_TessCoord.y;
+
+    vec4 p0 = gl_in[0].gl_Position;
+    vec4 p1 = gl_in[1].gl_Position;
+    vec4 p2 = gl_in[2].gl_Position;
+    vec4 p3 = gl_in[3].gl_Position;
+
+    // Bilinear interpolation
+    vec4 pos = mix(mix(p0, p1, u), mix(p3, p2, u), v);
+
+    gl_Position = projection * view * model * pos;
+
+    FragTexCoord = mix(mix(TexCoord[0], TexCoord[1], u), mix(TexCoord[3], TexCoord[2], u), v);
+}

@@ -6,6 +6,17 @@ InputHandler::InputHandler(GLFWwindow* window) : window(window), wireframeMode(f
 void InputHandler::processInput(float deltaTime) {
     static bool wireframeTogglePressed = false;
 
+    // Check if H key is pressed and released
+    if (glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS && !wireframeTogglePressed) {
+        toggleWireframeMode();
+        wireframeTogglePressed = true;  // Prevent multiple toggles during the same key press
+    }
+
+    // Reset toggle flag when H key is released
+    if (glfwGetKey(window, GLFW_KEY_H) == GLFW_RELEASE) {
+        wireframeTogglePressed = false;
+    }
+
     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
         printCursorCoordinates();
     }

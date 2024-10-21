@@ -222,10 +222,22 @@
     <Text Include="particle_vertex.txt" />
     <Text Include="perlin_fragment_shader.txt" />
     <Text Include="perlin_vertex_shader.txt" />
+    <Text Include="quad_fragment.txt" />
+    <Text Include="quad_tess_control.txt" />
+    <Text Include="quad_tess_eval.txt" />
+    <Text Include="quad_vertex.txt" />
     <Text Include="Resources\Shaders\lighting_fragment_shader.txt" />
     <Text Include="Resources\Shaders\lighting_vertex_shader.txt" />
     <Text Include="Resources\Shaders\shadow_fragment_shader.txt" />
     <Text Include="Resources\Shaders\shadow_vertex_shader.txt" />
+    <Text Include="terrain_fragment.txt" />
+    <Text Include="terrain_tess_control.txt" />
+    <Text Include="terrain_tess_eval.txt" />
+    <Text Include="terrain_vertex.txt" />
+    <Text Include="triangle_fragment.txt" />
+    <Text Include="triangle_tess_control.txt" />
+    <Text Include="triangle_tess_eval.txt" />
+    <Text Include="triangle_vertex.txt" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="OpenGL_Project.rc" />

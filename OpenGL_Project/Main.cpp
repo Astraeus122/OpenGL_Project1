@@ -183,9 +183,6 @@ int main()
     );
     mineRenderer.initialize();
 
-    LODScene lodScene(shaderLoader, cam);
-    lodScene.initialize();  // Initialize LOD Scene
-
     // Uncomment and properly initialize other renderers if needed
     /*
     InstancedRenderer alienRenderer(
@@ -245,6 +242,9 @@ int main()
     Plane plane;
     plane.loadPlane();
     glm::mat4 viewMatrix;
+
+    LODScene lodScene(shaderLoader, cam);
+    lodScene.initialize();  // Initialize LOD Scene
 
     viewMatrix = cam.GetViewMatrix();
 
@@ -329,7 +329,7 @@ int main()
             glDisable(GL_BLEND);
             break;
         case SCENE_LOD:
-            lodScene.render();  // Add LOD Scene rendering here
+            lodScene.render();  // Render LOD Scene
             break;
         default:
             break;

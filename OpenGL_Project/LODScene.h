@@ -1,31 +1,59 @@
 #ifndef LODSCENE_H
 #define LODSCENE_H
 
+#include "Dependencies/GLEW/glew.h"
+#include "Dependencies/glm/glm.hpp"
 #include "ShaderLoader.h"
 #include "Camera.h"
-#include "TerrainMap.h"  // Corrected class name
+#include "Texture.h"
+#include <string>
+#include <vector>
 
-class LODScene {
+class LODScene
+{
 public:
+    // Constructor and Destructor
     LODScene(ShaderLoader& shaderLoader, Camera& camera);
+    ~LODScene();
 
+    // Initialize the scene (load shaders, set up geometry, load textures)
     void initialize();
-    void update(float deltaTime);
+
+    // Render the scene
     void render();
 
 private:
-    GLuint shaderProgram;
-    GLuint vertexShader, tessControlShader, tessEvalShader, fragmentShader;
-
+    // References to ShaderLoader and Camera
+    ShaderLoader& shaderLoader;
     Camera& camera;
-    TerrainMap terrain;  // Corrected class name
 
-    glm::mat4 modelMatrix;
+    // Shader Programs
+    GLuint triangleProgram;
+    GLuint quadProgram;
+    GLuint terrainProgram;
 
-    bool wireframeMode;
+    // Vertex Array Objects and Vertex Buffer Objects
+    GLuint triangleVAO, triangleVBO;
+    GLuint quadVAO, quadVBO, quadEBO;
+    GLuint terrainVAO, terrainVBO, terrainEBO;
 
-    // Window handle for GLFW input
-    GLFWwindow* window;
+    // Textures
+    GLuint triangleTexture;
+    GLuint quadTexture;
+    GLuint terrainHeightmap;
+    GLuint terrainTexture;
+
+    // Terrain Parameters
+    int terrainResolution; // e.g., 32 for a 32x32 grid
+    std::vector<float> terrainVertices;
+    std::vector<unsigned int> terrainIndices;
+
+    // Helper Methods
+    void setupTriangle();
+    void setupQuad();
+    void setupTerrain();
+    void calculateTerrainGeometry();
+    void loadTextures();
 };
 
-#endif
+#endif 

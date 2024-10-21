@@ -1,0 +1,11 @@
+#version 450 core
+out vec4 FragColor;
+
+in vec2 TexCoord;
+
+uniform sampler2D terrainTexture;
+
+void main()
+{
+    FragColor = texture(terrainTexture, TexCoord);
+}

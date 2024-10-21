@@ -1,0 +1,25 @@
+#version 400 core
+
+layout(triangles, equal_spacing, cw) in;
+
+uniform mat4 projection;
+uniform mat4 view;
+uniform mat4 model;
+
+in vec2 TC[];
+out vec2 TexCoord;
+
+void main()
+{
+    vec3 barycentricCoords = gl_TessCoord;
+    vec4 worldPos = projection * view * model * (
+        barycentricCoords.x * gl_in[0].gl_Position +
+        barycentricCoords.y * gl_in[1].gl_Position +
+        barycentricCoords.z * gl_in[2].gl_Position
+    );
+
+    gl_Position = worldPos;
+    TexCoord = barycentricCoords.x * TC[0] +
+               barycentricCoords.y * TC[1] +
+               barycentricCoords.z * TC[2];
+}
