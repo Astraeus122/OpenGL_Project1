@@ -21,6 +21,8 @@ public:
     void scale(const glm::vec3& scaleFactor);
 
     glm::mat4 getModelMatrix() const { return modelMatrix; } // Ensure this returns a glm::mat4
+    GLuint getHeightmapTextureID() const { return grassTexture; }  // Replace with the actual texture ID variable
+
 
 private:
     std::string heightmapFile;

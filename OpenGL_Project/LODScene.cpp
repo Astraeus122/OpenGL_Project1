@@ -12,7 +12,7 @@ LODScene::LODScene(ShaderLoader& shaderLoader, Camera& camera)
         std::cerr << "Vertex Shader compilation failed!" << std::endl;
     }
 
-  /*  tessControlShader = shaderLoader.CreateShader(GL_TESS_CONTROL_SHADER, "tess_control_shader.glsl");
+   tessControlShader = shaderLoader.CreateShader(GL_TESS_CONTROL_SHADER, "tess_control_shader.glsl");
     if (!tessControlShader) {
         std::cerr << "Tessellation Control Shader compilation failed!" << std::endl;
     }
@@ -20,7 +20,7 @@ LODScene::LODScene(ShaderLoader& shaderLoader, Camera& camera)
     tessEvalShader = shaderLoader.CreateShader(GL_TESS_EVALUATION_SHADER, "tess_evaluation_shader.glsl");
     if (!tessEvalShader) {
         std::cerr << "Tessellation Evaluation Shader compilation failed!" << std::endl;
-    }*/
+    }
 
     fragmentShader = shaderLoader.CreateShader(GL_FRAGMENT_SHADER, "lod_fragment_shader.glsl");
     if (!fragmentShader) {
@@ -30,8 +30,8 @@ LODScene::LODScene(ShaderLoader& shaderLoader, Camera& camera)
 
     shaderProgram = glCreateProgram();
     glAttachShader(shaderProgram, vertexShader);
-   /* glAttachShader(shaderProgram, tessControlShader);
-    glAttachShader(shaderProgram, tessEvalShader);*/
+  glAttachShader(shaderProgram, tessControlShader);
+    glAttachShader(shaderProgram, tessEvalShader);
     glAttachShader(shaderProgram, fragmentShader);
     glLinkProgram(shaderProgram);
 
@@ -76,22 +76,31 @@ void LODScene::update(float deltaTime) {
 }
 
 void LODScene::render() {
+    // Activate the shader program
     glUseProgram(shaderProgram);
 
-    // Ensure that getModelMatrix() returns a glm::mat4
+    // Pass the model matrix to the shaders
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "modelMatrix"), 1, GL_FALSE, glm::value_ptr(terrain.getModelMatrix()));
+
+    // Pass the view and projection matrices (camera)
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "viewMatrix"), 1, GL_FALSE, glm::value_ptr(camera.GetViewMatrix()));
     glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "projectionMatrix"), 1, GL_FALSE, glm::value_ptr(camera.GetProjectionMatrix()));
 
-    // Pass camera position for LOD calculations
+    // Pass the camera position for LOD and tessellation calculations
     glUniform3fv(glGetUniformLocation(shaderProgram, "cameraPos"), 1, glm::value_ptr(camera.getPosition()));
+
+    // Bind the heightmap texture before rendering terrain
+    glActiveTexture(GL_TEXTURE0);  // Set the active texture unit to 0
+    glBindTexture(GL_TEXTURE_2D, terrain.getHeightmapTextureID());  // Bind the heightmap texture (replace with actual texture ID getter)
+    glUniform1i(glGetUniformLocation(shaderProgram, "heightmap"), 0);  // Set the uniform for the heightmap in the shader
 
     // Render the terrain using tessellation
     terrain.renderNormal(shaderProgram);
 
+    // Optionally print the camera position for debugging
     glm::vec3 camPos = camera.getPosition();
     std::cout << "Camera Position: " << camPos.x << ", " << camPos.y << ", " << camPos.z << std::endl;
 
-
+    // Deactivate the shader program
     glUseProgram(0);
 }
