@@ -3,7 +3,7 @@
 
 #include "ShaderLoader.h"
 #include "Camera.h"
-#include "TerrainMap.h"  // Corrected class name
+#include "TerrainMap.h"  // Ensure this is the correct path to TerrainMap
 
 class LODScene {
 public:
@@ -18,11 +18,16 @@ private:
     GLuint vertexShader, tessControlShader, tessEvalShader, fragmentShader;
 
     Camera& camera;
-    TerrainMap terrain;  // Corrected class name
+    TerrainMap terrain;  // Terrain object for handling the terrain
 
     glm::mat4 modelMatrix;
 
     bool wireframeMode;
+
+    Texture* heightmapTexture;
+    Texture* terrainTexture;
+
+
 
     // Window handle for GLFW input
     GLFWwindow* window;

@@ -20,7 +20,12 @@ public:
     void translate(const glm::vec3& offset);
     void scale(const glm::vec3& scaleFactor);
 
-    glm::mat4 getModelMatrix() const { return modelMatrix; } // Ensure this returns a glm::mat4
+    glm::mat4 getModelMatrix() const { return modelMatrix; } // Getter for model matrix
+
+    // New methods to fix the current errors
+    GLuint getVAO() const { return vao; }
+    size_t getIndexCount() const { return indices.size(); }
+    GLuint loadTexture(const std::string& filePath);
 
 private:
     std::string heightmapFile;
@@ -29,7 +34,7 @@ private:
     std::vector<unsigned char> heightmap;
     std::vector<glm::vec3> vertices;
     std::vector<glm::vec3> normals;
-    std::vector<GLuint> indices;
+    std::vector<GLuint> indices;  // Ensure this is defined to track index data
 
     GLuint vao, vbo, ebo;
     GLuint grassTexture, dirtTexture, rockTexture, snowTexture;
@@ -41,7 +46,7 @@ private:
     void createTerrainMesh();
     void computeNormals();
     void loadTextures();
-    GLuint loadTexture(const std::string& filePath);
+    
 };
 
 #endif // TERRAINMAP_H

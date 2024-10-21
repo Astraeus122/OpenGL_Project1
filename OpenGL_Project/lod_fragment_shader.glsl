@@ -1,8 +1,9 @@
 #version 430 core
+out vec4 fragColor;
 
-out vec4 FragColor;
+in vec2 fragTexCoord;
+uniform sampler2D terrainTexture;
 
 void main() {
-    // Use a simple color output for now
-    FragColor = vec4(0.5, 0.5, 0.5, 1.0);  // Set a default gray color
+    fragColor = texture(terrainTexture, fragTexCoord);
 }
